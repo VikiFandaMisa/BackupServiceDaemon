@@ -7,6 +7,7 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using static System.Environment;
 using System.Security.Cryptography;
+using System.Net.Http.Headers;
 
 
 namespace BackupServiceDaemon
@@ -15,13 +16,14 @@ namespace BackupServiceDaemon
     {
         //VSUDE SEND AUTHORIZATION: Bearer *token*
         public static string URL { get; set; } = "http://localhost:5001/api";
+		public static string Token { get; set; }
 		
         public static string ApplicationData { get; set; }
-        public static Computer GetComputer()
-        {
+        public static Computer GetComputer() {
             using (var computer = new HttpClient())
             {
                 computer.BaseAddress = new Uri(URL);
+				computer.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token);
 
                 var responseTask = computer.GetAsync("computers/self");
                 responseTask.Wait();
@@ -36,7 +38,24 @@ namespace BackupServiceDaemon
                 throw new Exception("Computer not found");
             }
         }
+		public static void SetToken() {
+			using (var tokenRequest = new HttpClient())
+            {
+			tokenRequest.BaseAddress = new Uri(URL);
 
+                var responseTask = tokenRequest.GetAsync("token/computer");
+                responseTask.Wait();
+               
+                if (responseTask.Result.IsSuccessStatusCode)
+                {
+                    var readTask = responseTask.Result.Content.ReadAsAsync<TokenRequest>();
+                    readTask.Wait();
+
+                    Token = responseTask.Result.Content.ToString();
+                }
+                throw new Exception("Error");
+		}
+		}
 		public static void PostComputer()
         {
             using (var computer = new HttpClient())
