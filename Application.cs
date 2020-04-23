@@ -6,7 +6,8 @@ namespace BackupServiceDaemon
     public class Application
     {
         public int ID { get; set; }
-        Computer computer = new Computer();
+        Computer computer = new Computer();        
+	    string TokerinoNegerino { get; set; }
 
         public bool IsRecorded()
         {
@@ -24,7 +25,7 @@ namespace BackupServiceDaemon
                     return false;
             }           
             throw new Exception("Computer not recorded");
-        }        
+        }
         public void Init(){
             if (!IsRecorded())
                 Http.PostComputer();
