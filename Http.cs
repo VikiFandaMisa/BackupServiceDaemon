@@ -1,9 +1,13 @@
 using BackupServiceDaemon.Models;
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using static System.Environment;
+using System.Security.Cryptography;
+
 
 namespace BackupServiceDaemon
 {
@@ -11,6 +15,8 @@ namespace BackupServiceDaemon
     {
         //VSUDE SEND AUTHORIZATION: Bearer *token*
         public static string URL { get; set; } = "http://localhost:5001/api";
+		
+        public static string ApplicationData { get; set; }
         public static Computer GetComputer()
         {
             using (var computer = new HttpClient())
@@ -49,6 +55,18 @@ namespace BackupServiceDaemon
                     readTask.Wait();
 
                     Console.WriteLine("PC info sent");
+					
+					//var httpResponse = Task.Result.Content;
+					//Task.Result.Content;
+					ApplicationData = Path.Combine(
+                    GetFolderPath(SpecialFolder.ApplicationData),
+                    Path.GetFileNameWithoutExtension(
+                        System.Reflection.Assembly.GetExecutingAssembly().ManifestModule.Name
+                    	)
+                	);
+					string IDFile = Path.Combine(ApplicationData, "ID");
+
+					File.WriteAllText(IDFile, Task.Result.Content.ToString());
                 }
                 else
                 {

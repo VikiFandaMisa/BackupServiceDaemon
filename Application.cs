@@ -10,27 +10,19 @@ namespace BackupServiceDaemon
 
         public bool IsRecorded()
         {
-            foreach (var item in Http.GetComputer())
-            {
-                if (PCInfo.GetIP() == item.IP && PCInfo.GetMAC() == item.MAC)
-                    return true;
-            }
+            if (PCInfo.GetIP() == Http.GetComputer().IP && PCInfo.GetMAC() == Http.GetComputer().MAC)
+                return true;
             return false;
         }
         public bool IsActive()
         {
-            foreach (var item in Http.GetComputer())
-            {
-                if (PCInfo.GetIP() == item.IP
-                   && PCInfo.GetMAC() == item.MAC)
-                {
-                    this.ID = Convert.ToInt32(item.ID);
-                    if (item.Status == 1)
-                        return true;
-                    else
-                        return false;
-                }
-            }            
+            if (PCInfo.GetIP() ==  Http.GetComputer().IP && PCInfo.GetMAC() ==  Http.GetComputer().MAC) {
+            this.ID = Convert.ToInt32( Http.GetComputer().ID);
+                if ( Http.GetComputer().Status == 1)
+                    return true;
+                else
+                    return false;
+            }           
             throw new Exception("Computer not recorded");
         }        
         public void Init(){
