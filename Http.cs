@@ -1,4 +1,4 @@
-using BackupServiceDaemon.Tables;
+using BackupServiceDaemon.Models;
 using System;
 using System.Net;
 using System.Net.Http;
@@ -10,18 +10,18 @@ namespace BackupServiceDaemon
     public static class Http
     {
         public static string URL { get; set; } = "http://localhost:5001";
-        public static Computers[] GetComputers()
+        public static Computer[] GetComputer()
         {
-            using (var computers = new HttpClient())
+            using (var computer = new HttpClient())
             {
-                computers.BaseAddress = new Uri(URL);
+                computer.BaseAddress = new Uri(URL);
 
-                var responseTask = computers.GetAsync("computers");
+                var responseTask = computer.GetAsync("computer");
                 responseTask.Wait();
                
                 if (responseTask.Result.IsSuccessStatusCode)
                 {
-                    var readTask = responseTask.Result.Content.ReadAsAsync<Computers[]>();
+                    var readTask = responseTask.Result.Content.ReadAsAsync<Computer[]>();
                     readTask.Wait();
 
                     return readTask.Result;
@@ -30,16 +30,16 @@ namespace BackupServiceDaemon
             }
         }
 
-		public static void PostComputers()
+		public static void PostComputer()
         {
             using (var computer = new HttpClient())
             {
                 computer.BaseAddress = new Uri(URL);
                 
 
-                var Computer = new ComputerRegistration() { Hostname = PCInfo.GetHostName(), MAC = PCInfo.GetMAC(), IP = PCInfo.GetIP() };
+                var computerRegistration = new ComputerRegistration() { Hostname = PCInfo.GetHostName(), MAC = PCInfo.GetMAC(), IP = PCInfo.GetIP() };
 
-                var Task = computer.PostAsJsonAsync<ComputerRegistration>("client", Computer);
+                var Task = computer.PostAsJsonAsync<ComputerRegistration>("client", computerRegistration);
                 Task.Wait();
 
                 if (Task.Result.IsSuccessStatusCode)

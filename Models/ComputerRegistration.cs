@@ -1,6 +1,6 @@
 using System;
 
-namespace BackupServiceDaemon.Tables
+namespace BackupServiceDaemon.Models
 {
     public class ComputerRegistration
     {

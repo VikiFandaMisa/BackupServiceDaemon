@@ -1,4 +1,4 @@
-using BackupServiceDaemon.Tables;
+using BackupServiceDaemon.Models;
 using System;
 
 namespace BackupServiceDaemon
@@ -6,11 +6,11 @@ namespace BackupServiceDaemon
     public class Application
     {
         public int ID { get; set; }
-        Computers computers = new Computers();
+        Computer computer = new Computer();
 
         public bool IsRecorded()
         {
-            foreach (var item in Http.GetComputers())
+            foreach (var item in Http.GetComputer())
             {
                 if (PCInfo.GetIP() == item.IP && PCInfo.GetMAC() == item.MAC)
                     return true;
@@ -19,7 +19,7 @@ namespace BackupServiceDaemon
         }
         public bool IsActive()
         {
-            foreach (var item in Http.GetComputers())
+            foreach (var item in Http.GetComputer())
             {
                 if (PCInfo.GetIP() == item.IP
                    && PCInfo.GetMAC() == item.MAC)
@@ -35,7 +35,7 @@ namespace BackupServiceDaemon
         }        
         public void Init(){
             if (!IsRecorded())
-                Http.PostComputers();
+                Http.PostComputer();
             else
                 System.Console.WriteLine("Computer already recorded");
             

@@ -1,8 +1,8 @@
 using System;
 
-namespace BackupServiceDaemon.Tables
+namespace BackupServiceDaemon.Models
 {
-    public class Computers
+    public class Computer
     {
         public int ID { get; set;}
         public string Hostname {get; set;}
