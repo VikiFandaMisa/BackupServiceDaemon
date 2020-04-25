@@ -15,31 +15,23 @@ namespace BackupServiceDaemon
             return Environment.MachineName;
         }
 
-        public static string GetIP()
-        {
-            var host = Dns.GetHostEntry(Dns.GetHostName());
-
-            foreach (var ip in host.AddressList)
-            {
-                if (ip.AddressFamily == AddressFamily.InterNetwork)
-                {
-                    return ip.ToString();
-                }
-                
+        private static NetworkInterface GetFirstWorkingNIC() {
+            foreach (NetworkInterface nic in NetworkInterface.GetAllNetworkInterfaces()) {
+                if (nic.OperationalStatus == OperationalStatus.Up)
+                    return nic;
             }
-            return "NO ADDRESS FOUND";
+            
+            throw new Exception("No NIC found");
         }
 
-        public static string GetMAC()
-        {
-            foreach (NetworkInterface nic in NetworkInterface.GetAllNetworkInterfaces())
-            {
-                if (nic.OperationalStatus == OperationalStatus.Up)
-                    return string.Join(":", (from b in nic.GetPhysicalAddress().GetAddressBytes()
-                                            select b.ToString("X2")).ToArray());
-            }
+        public static string GetIP() {
+            return GetFirstWorkingNIC().GetIPProperties().UnicastAddresses[0].Address.ToString();
+        }
 
-            return "NO ADDRESS FOUND";
+        public static string GetMAC() {
+            NetworkInterface nic = GetFirstWorkingNIC();
+            return string.Join(":", (from b in nic.GetPhysicalAddress().GetAddressBytes()
+                                    select b.ToString("X2")).ToArray());
         }
     }
 }

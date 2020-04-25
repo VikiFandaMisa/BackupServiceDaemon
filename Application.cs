@@ -5,38 +5,25 @@ namespace BackupServiceDaemon
 {
     public class Application
     {
-        public int ID { get; set; }
-        Computer computer = new Computer();        
-	    string TokerinoNegerino { get; set; }
-
-        public bool IsRecorded()
-        {
-            if (PCInfo.GetIP() == Http.GetComputer().IP && PCInfo.GetMAC() == Http.GetComputer().MAC)
-                return true;
-            return false;
-        }
-        public bool IsActive()
-        {
-            if (PCInfo.GetIP() ==  Http.GetComputer().IP && PCInfo.GetMAC() ==  Http.GetComputer().MAC) {
-            this.ID = Convert.ToInt32( Http.GetComputer().ID);
-                if ( Http.GetComputer().Status == 1)
-                    return true;
-                else
-                    return false;
-            }           
-            throw new Exception("Computer not recorded");
-        }
-        public void Init(){
-            if (!IsRecorded())
-                Http.PostComputer();
-            else
-                System.Console.WriteLine("Computer already recorded");
-            
-            if(IsActive()){
-                Console.WriteLine("Computer active");
+        static Application() {
+            try {
+                SettingsService.Load();
             }
-            else
-                Console.WriteLine("Computer inactive");
+            catch (System.IO.FileNotFoundException) {
+                System.Console.WriteLine("No settings found.\n");
+            }
+        }
+
+        public static void TryConnect() {
+
+        }
+
+        public static void Register() {
+
+        }
+
+        public static void Self() {
+
         }
     }
 }
