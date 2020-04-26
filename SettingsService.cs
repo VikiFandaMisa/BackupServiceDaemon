@@ -21,6 +21,8 @@ namespace BackupServiceDaemon
 
             if (!Directory.Exists(ApplicationData))
                 Directory.CreateDirectory(ApplicationData);
+
+            Settings = new Settings();
         }
         public static async void Save() {
             var options = new JsonWriterOptions { Indented = true };
@@ -33,11 +35,15 @@ namespace BackupServiceDaemon
         public static void Load() {
             Settings = JsonSerializer.Deserialize<Settings>(File.ReadAllText(SettingsFile));
         }
+        public static void Wipe() {
+            Directory.Delete(ApplicationData, true);
+            Application.Exit = true;
+        }
     }
 
     public class Settings
     {
-        public int ID { get; set; }
+        public int? ID { get; set; }
         public string Server { get; set; }
     }
 }

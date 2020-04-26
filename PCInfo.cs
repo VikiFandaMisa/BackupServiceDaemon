@@ -11,7 +11,7 @@ namespace BackupServiceDaemon
 {
     public static class PCInfo
     {
-        public static string GetHostName() {
+        public static string GetHostname() {
             return Environment.MachineName;
         }
 
