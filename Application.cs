@@ -1,5 +1,8 @@
-using BackupServiceDaemon.Models;
 using System;
+using System.Threading.Tasks;
+
+using BackupServiceDaemon.Models;
+using BackupServiceDaemon.BackupAlgorithms;
 
 namespace BackupServiceDaemon
 {
@@ -7,6 +10,7 @@ namespace BackupServiceDaemon
     {
         public static bool Exit { get; set; } = false;
         static Application() {
+            /*
             try {
                 SettingsService.Load();
             }
@@ -17,6 +21,7 @@ namespace BackupServiceDaemon
                     SettingsService.Settings.Server += '/';
                 SettingsService.Save();
             }
+            */
         }
 
         public static void Loop() {
@@ -25,11 +30,20 @@ namespace BackupServiceDaemon
                 Console.WriteLine();
 
                 if (info == ConsoleKey.F1)
+                    FullBackup();
+                if (info == ConsoleKey.F2)
+                    DifferentialBackup();
+                if (info == ConsoleKey.F3)
+                    IncrementalBackup();
+                 
+                /*
+                if (info == ConsoleKey.F1)
                     Application.Register();
                 if (info == ConsoleKey.F2)
                     Application.Self();
                 if (info == ConsoleKey.F3)
                     SettingsService.Wipe();
+                */
             }
         }
 
@@ -84,6 +98,23 @@ namespace BackupServiceDaemon
             catch  (Exception e) {
                 throw e;
             }
+        }
+
+        public static void RunBackup(IBackup backup) {
+            var progress = new Progress<BackupProgress>();
+            progress.ProgressChanged += ( s, e ) => System.Console.WriteLine(e.Percentage);
+
+            Task.Factory.StartNew(() => backup.Run(progress));
+        }
+
+        public static void FullBackup() {
+            RunBackup(new FullBackup());
+        }
+        public static void DifferentialBackup() {
+            RunBackup(new DifferentialBackup());
+        }
+        public static void IncrementalBackup() {
+            RunBackup(new IncrementalBackup());
         }
     }
 }
