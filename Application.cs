@@ -30,11 +30,11 @@ namespace BackupServiceDaemon
                 Console.WriteLine();
 
                 if (info == ConsoleKey.F1)
-                    FullBackup();
+                    RunBackup(FullBackup());
                 if (info == ConsoleKey.F2)
-                    DifferentialBackup();
+                    RunBackup(DifferentialBackup());
                 if (info == ConsoleKey.F3)
-                    IncrementalBackup();
+                    RunBackup(IncrementalBackup());
                  
                 /*
                 if (info == ConsoleKey.F1)
@@ -107,14 +107,14 @@ namespace BackupServiceDaemon
             Task.Factory.StartNew(() => backup.Run(progress));
         }
 
-        public static void FullBackup() {
-            RunBackup(new FullBackup());
+        public static IBackup FullBackup() {
+            return new FullBackup();
         }
-        public static void DifferentialBackup() {
-            RunBackup(new DifferentialBackup());
+        public static IBackup DifferentialBackup() {
+            return new DifferentialBackup();
         }
-        public static void IncrementalBackup() {
-            RunBackup(new IncrementalBackup());
+        public static IBackup IncrementalBackup() {
+            return new IncrementalBackup();
         }
     }
 }
