@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
 
 namespace BackupServiceDaemon.BackupAlgorithms
 {
@@ -10,12 +8,11 @@ namespace BackupServiceDaemon.BackupAlgorithms
         public string Target { get; set; }
         public void Run(IProgress<BackupProgress> progress) {
             System.Console.WriteLine("Full backup");
+            this.Backup();
             progress.Report(new BackupProgress() { Percentage = 100 });
         }
         public void Backup() {
             Utils.CopyDirectory(Source, Target);
-        }
-        
-    }
-    
+        }        
+    }    
 }
