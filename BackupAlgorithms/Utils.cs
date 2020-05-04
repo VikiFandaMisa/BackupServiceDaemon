@@ -37,6 +37,12 @@ namespace BackupServiceDaemon.BackupAlgorithms
 				foreach (var folder in Directory.GetDirectories(folders.Source))
 					stack.Push(new ThreeFolders(folder, Path.Combine(folders.Target, Path.GetFileName(folder)), Path.Combine(folders.LastBU, Path.GetFileName(folder))));
 			}
+		}        
+		public static bool IsFirst(string Target) {
+			return (Directory.GetDirectories(Target).Length == 0);
+		}
+		public static bool IsLimitReached(string Target, int Retention) { 
+			return (Directory.GetDirectories(Target).Length >= Retention);
 		}
 	}
 	public class TwoFolders {

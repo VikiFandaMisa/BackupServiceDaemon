@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace BackupServiceDaemon.BackupAlgorithms
 {
@@ -11,6 +12,7 @@ namespace BackupServiceDaemon.BackupAlgorithms
 			progress.Report(new BackupProgress() { Percentage = 100 });
 		}
 		public void Backup() {
+            Directory.CreateDirectory(Target + @"\BackUp_" + DateTime.Today.ToShortDateString());
 			Utils.CopyDirectory(Source, Target);
 		}
 	}    
