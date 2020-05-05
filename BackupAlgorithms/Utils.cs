@@ -43,9 +43,17 @@ namespace BackupServiceDaemon.BackupAlgorithms
 		}
 		public static bool IsLimitReached(string Target, int Retention) { 
 			return (Directory.GetDirectories(Target).Length >= Retention);
+		}		
+		public static string FindLast(string Target) {
+			DateTime Date = Directory.GetLastWriteTime(Path.Combine(Target, Directory.GetDirectories(Target)[0]));
+			string Last = null;
+			foreach (var dir in Directory.GetDirectories(Target)) {
+				if (Directory.GetLastWriteTime(Path.Combine(Target, dir)) > Date)				
+					Last = dir;
+			}
+			return Last;
 		}
-	}
-	public class TwoFolders {
+		private class TwoFolders {
 		public string Source { get; private set; }
 		public string Target { get; private set; }
 
@@ -54,7 +62,7 @@ namespace BackupServiceDaemon.BackupAlgorithms
 			Target = target;
 		}
 	}
-	public class ThreeFolders {
+	private class ThreeFolders {
 		public string Source { get; private set; }
 		public string Target { get; private set; }
 		public string LastBU { get; set; }
@@ -65,4 +73,5 @@ namespace BackupServiceDaemon.BackupAlgorithms
 			LastBU = lastBU;
 		}
 	}
+	}	
 }

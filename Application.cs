@@ -107,14 +107,14 @@ namespace BackupServiceDaemon
             Task.Factory.StartNew(() => backup.Run(progress));
         }
 
-        public static IBackup FullBackup() {
-            return new FullBackup();
+        public static IBackup FullBackup(Template template, string source, string target) {
+            return new FullBackup() { Source = source, Target = target };
         }
-        public static IBackup DifferentialBackup() {
-            return new DifferentialBackup();
+        public static IBackup DifferentialBackup(Template template, string source, string target) {
+            return new DifferentialBackup() { Source = source, Target = target, Retention = template.Retention };
         }
-        public static IBackup IncrementalBackup() {
-            return new IncrementalBackup();
+        public static IBackup IncrementalBackup(Template template, string source, string target) {
+            return new IncrementalBackup() { Source = source, Target = target, Retention = template.Retention };
         }
     }
 }
