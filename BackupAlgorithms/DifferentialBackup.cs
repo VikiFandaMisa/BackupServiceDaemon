@@ -27,7 +27,7 @@ namespace BackupServiceDaemon.BackupAlgorithms
             DateTime Date = Directory.GetLastWriteTime(Path.Combine(Target, Directory.GetDirectories(Target)[0]));
             string Last = null;
             foreach (var dir in Directory.GetDirectories(Target)) {
-                if (Directory.GetLastWriteTime(Path.Combine(Target, dir)) > Date && dir.Contains(SettingsService.Settings.PrefixFull))				
+                if (Directory.GetLastWriteTime(Path.Combine(Target, dir)) > Date && dir.StartsWith(SettingsService.Settings.PrefixFull))				
                     Last = dir;
             }
             return Last;
