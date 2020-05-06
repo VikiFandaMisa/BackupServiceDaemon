@@ -45,5 +45,7 @@ namespace BackupServiceDaemon
     {
         public int? ID { get; set; }
         public string Server { get; set; }
+        public string Prefix { get; set; } = @"\Backup_";
+        public string PrefixFull { get; set; } = @"\FullBackup_";
     }
 }
