@@ -11,6 +11,7 @@ namespace BackupServiceDaemon.BackupAlgorithms
         public void Run(IProgress<BackupProgress> progress) {
             System.Console.WriteLine("Incremental backup");
             progress.Report(new BackupProgress() { Percentage = 100 });
+            this.Backup();
         }
         public void Backup() {
             if (Utils.IsLimitReached(Target, Retention) || Utils.IsFirst(Target)) {
