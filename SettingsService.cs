@@ -47,5 +47,6 @@ namespace BackupServiceDaemon
         public string Server { get; set; }
         public string Prefix { get; set; } = @"\Backup_";
         public string PrefixFull { get; set; } = @"\FullBackup_";
+        public BackupServiceDaemon.Models.Job[] Jobs {get; set;}
     }
 }
