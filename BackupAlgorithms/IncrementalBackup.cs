@@ -20,7 +20,7 @@ namespace BackupServiceDaemon.BackupAlgorithms
             }
             else {
                 Directory.CreateDirectory(Target + SettingsService.Settings.Prefix + DateTime.Today.ToShortDateString());
-                Utils.CopyChangedFiles(Source, Target + SettingsService.Settings.Prefix + DateTime.Today.ToShortDateString(), Path.Combine(Target, FindLast(Target)));
+                Utils.CopyChangedFiles(Source, Target + SettingsService.Settings.Prefix + DateTime.Today.ToShortDateString(), Path.Combine(Target, Utils.FindLast(Target, Source)));
             }
         }
         public static string FindLast(string Target) {

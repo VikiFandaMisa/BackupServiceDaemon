@@ -20,17 +20,8 @@ namespace BackupServiceDaemon.BackupAlgorithms
             }
             else {
                 Directory.CreateDirectory(Target + SettingsService.Settings.Prefix + DateTime.Today.ToShortDateString());
-                Utils.CopyChangedFiles(Source, Target + SettingsService.Settings.Prefix + DateTime.Today.ToShortDateString(), Path.Combine(Target, FindLastFull(Target)));
+                Utils.CopyChangedFiles(Source, Target + SettingsService.Settings.Prefix + DateTime.Today.ToShortDateString(), Path.Combine(Target, Utils.FindLastFull(Target, Source)));
             }
-        }
-        public static string FindLastFull(string Target) {
-            DateTime Date = Directory.GetLastWriteTime(Path.Combine(Target, Directory.GetDirectories(Target)[0]));
-            string Last = null;
-            foreach (var dir in Directory.GetDirectories(Target)) {
-                if (Directory.GetLastWriteTime(Path.Combine(Target, dir)) > Date && dir.StartsWith(SettingsService.Settings.PrefixFull))				
-                    Last = dir;
-            }
-            return Last;
         }
     }
 }

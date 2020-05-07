@@ -44,11 +44,20 @@ namespace BackupServiceDaemon.BackupAlgorithms
         public static bool IsLimitReached(string Target, int Retention) { 
             return (Directory.GetDirectories(Target).Length >= Retention);
         }		
-        public static string FindLast(string Target) {
+        public static string FindLast(string Target, string SourceFolder) {
             DateTime Date = Directory.GetLastWriteTime(Path.Combine(Target, Directory.GetDirectories(Target)[0]));
             string Last = null;
             foreach (var dir in Directory.GetDirectories(Target)) {
-                if (Directory.GetLastWriteTime(Path.Combine(Target, dir)) > Date)				
+                if (Directory.GetLastWriteTime(Path.Combine(Target, dir)) > Date && dir.Contains(SourceFolder))
+                    Last = dir;
+            }
+            return Last;
+        }        
+        public static string FindLastFull(string Target,  string SourceFolder) {
+            DateTime Date = Directory.GetLastWriteTime(Path.Combine(Target, Directory.GetDirectories(Target)[0]));
+            string Last = null;
+            foreach (var dir in Directory.GetDirectories(Target)) {
+                if (Directory.GetLastWriteTime(Path.Combine(Target, dir)) > Date && dir.StartsWith(SettingsService.Settings.PrefixFull) && dir.Contains(SourceFolder))				
                     Last = dir;
             }
             return Last;
