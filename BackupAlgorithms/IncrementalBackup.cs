@@ -15,12 +15,12 @@ namespace BackupServiceDaemon.BackupAlgorithms
         }
         public void Backup() {
             if (Utils.IsLimitReached(Target, Retention) || Utils.IsFirst(Target)) {
-                Directory.CreateDirectory(Target + SettingsService.Settings.PrefixFull + DateTime.Today.ToShortDateString());
-                Utils.CopyDirectory(Source, Target + SettingsService.Settings.PrefixFull + DateTime.Today.ToShortDateString());
+                Directory.CreateDirectory(Target + SettingsService.Settings.PrefixFull + '_' + Source + '_' + DateTime.Today.ToShortDateString());
+                Utils.CopyDirectory(Source, Target + SettingsService.Settings.PrefixFull  + '_' + Source + '_' + DateTime.Today.ToShortDateString());
             }
             else {
-                Directory.CreateDirectory(Target + SettingsService.Settings.Prefix + DateTime.Today.ToShortDateString());
-                Utils.CopyChangedFiles(Source, Target + SettingsService.Settings.Prefix + DateTime.Today.ToShortDateString(), Path.Combine(Target, Utils.FindLast(Target, Source)));
+                Directory.CreateDirectory(Target + SettingsService.Settings.Prefix  + '_' + Source + '_' + DateTime.Today.ToShortDateString());
+                Utils.CopyChangedFiles(Source, Target + SettingsService.Settings.Prefix  + '_' + Source + '_' + DateTime.Today.ToShortDateString(), Path.Combine(Target, Utils.FindLast(Target, Source)));
             }
         }
         public static string FindLast(string Target) {
