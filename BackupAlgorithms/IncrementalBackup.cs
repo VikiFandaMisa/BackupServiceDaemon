@@ -14,16 +14,18 @@ namespace BackupServiceDaemon.BackupAlgorithms
             this.Backup();
         }
         public void Backup() {
+            /*
             if (Utils.IsLimitReached(Target, Retention) || Utils.IsFirst(Target)) {
                 string target = Utils.GetTarget(SettingsService.Settings.PrefixFull, Target, Source);
                 Directory.CreateDirectory(target);
                 Utils.CopyDirectory(Source, target);
             }
-            else {
+            */
+            //else {
                 string target = Utils.GetTarget(SettingsService.Settings.Prefix, Target, Source);
                 Directory.CreateDirectory(target);
                 Utils.CopyChangedFiles(Source, target, Utils.FindLast(Target, Source));
-            }
+            //}
         }
     }
 }
