@@ -13,7 +13,7 @@ namespace BackupServiceDaemon.BackupAlgorithms
         }
         public void Backup() {
             Directory.CreateDirectory(Target + SettingsService.Settings.PrefixFull + DateTime.Today.ToShortDateString());
-            Utils.CopyDirectory(Source, Target);
+            Utils.CopyDirectory(Source, Target + SettingsService.Settings.PrefixFull + DateTime.Today.ToShortDateString());
         }
     }    
 }

@@ -11,17 +11,17 @@ namespace BackupServiceDaemon.BackupAlgorithms
         public void Run(IProgress<BackupProgress> progress) {
             System.Console.WriteLine("Differential backup");
             progress.Report(new BackupProgress() { Percentage = 100 });
+            this.Backup();
+        }
+        public void Backup() {
             if (Utils.IsFirst(Target) || Utils.IsLimitReached(Target, Retention)) {
                 Directory.CreateDirectory(Target + SettingsService.Settings.PrefixFull + DateTime.Today.ToShortDateString());
                 Utils.CopyDirectory(Source, Target + SettingsService.Settings.Prefix + DateTime.Today.ToShortDateString());
             }
             else {
                 Directory.CreateDirectory(Target + SettingsService.Settings.Prefix + DateTime.Today.ToShortDateString());
-                this.Backup();
+                Utils.CopyChangedFiles(Source, Target + SettingsService.Settings.Prefix + DateTime.Today.ToShortDateString(), Path.Combine(Target, FindLastFull(Target)));
             }
-        }
-        public void Backup() {
-            Utils.CopyChangedFiles(Source, Target + SettingsService.Settings.Prefix + DateTime.Today.ToShortDateString(), Path.Combine(Target, FindLastFull(Target)));
         }
         public static string FindLastFull(string Target) {
             DateTime Date = Directory.GetLastWriteTime(Path.Combine(Target, Directory.GetDirectories(Target)[0]));
