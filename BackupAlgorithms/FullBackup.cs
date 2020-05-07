@@ -12,8 +12,10 @@ namespace BackupServiceDaemon.BackupAlgorithms
             progress.Report(new BackupProgress() { Percentage = 100 });
         }
         public void Backup() {
-            Directory.CreateDirectory(Target + SettingsService.Settings.PrefixFull + '_' + Source + '_' + DateTime.Today.ToShortDateString());
-            Utils.CopyDirectory(Source, Target + SettingsService.Settings.PrefixFull + '_' + Source + '_' + DateTime.Today.ToShortDateString());
+            string target = Utils.GetTarget(SettingsService.Settings.PrefixFull, Target, Source);
+            System.Console.WriteLine(target);
+            Directory.CreateDirectory(target);
+            Utils.CopyDirectory(Source, target);
         }
     }    
 }

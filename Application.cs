@@ -120,11 +120,13 @@ namespace BackupServiceDaemon
         public static void RunJob(Job job) {
             foreach(Path source in job.Sources) {
                 foreach(Path target in job.Targets) {
-                    if (job.Type == BackupType.Full)
+                    System.Console.WriteLine("{0} {1} {2}", job.Type, source.Directory, target.Directory);
+                    RunBackup(DifferentialBackup(source.Directory, target.Directory, job.Retention));
+                    if (job.Type == BackupType.Full && false)
                         RunBackup(FullBackup(source.Directory, target.Directory, job.Retention));
-                    if (job.Type == BackupType.Differential)
+                    else if (job.Type == BackupType.Differential)
                         RunBackup(DifferentialBackup(source.Directory, target.Directory, job.Retention));
-                    if (job.Type == BackupType.Incremental)
+                    else if (job.Type == BackupType.Incremental)
                         RunBackup(IncrementalBackup(source.Directory, target.Directory, job.Retention));
                 }
             }

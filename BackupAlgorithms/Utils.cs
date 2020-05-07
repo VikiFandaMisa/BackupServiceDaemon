@@ -53,14 +53,25 @@ namespace BackupServiceDaemon.BackupAlgorithms
             }
             return Last;
         }        
-        public static string FindLastFull(string Target,  string SourceFolder) {
+        public static string FindLastFull(string Target,  string Source) {
+            Target = ConvertSeparators(Target);
+            string sourceFolder = Path.GetFileName(ConvertSeparators(Source));
             DateTime Date = Directory.GetLastWriteTime(Path.Combine(Target, Directory.GetDirectories(Target)[0]));
             string Last = null;
             foreach (var dir in Directory.GetDirectories(Target)) {
-                if (Directory.GetLastWriteTime(Path.Combine(Target, dir)) > Date && dir.StartsWith(SettingsService.Settings.PrefixFull) && dir.Contains(SourceFolder))				
+                if (Directory.GetLastWriteTime(Path.Combine(Target, dir)) > Date && dir.StartsWith(SettingsService.Settings.PrefixFull) && dir.Contains(sourceFolder))				
                     Last = dir;
             }
-            return Last;
+            return Path.Combine(Target, Last);
+        }
+        public static string GetSuffix() {
+            return '_' + DateTime.UtcNow.ToString().Replace(':', '-').Replace(' ', '_');
+        }
+        public static string GetTarget(string prefix, string target, string source) {
+            return Path.Combine(ConvertSeparators(target), (prefix + Path.GetFileName(ConvertSeparators(source)) + Utils.GetSuffix()).Replace(Path.DirectorySeparatorChar.ToString(), ""));
+        }
+        public static string ConvertSeparators(string path) {
+            return path.Replace('/', Path.DirectorySeparatorChar);
         }
         private class TwoFolders {
         public string Source { get; private set; }
