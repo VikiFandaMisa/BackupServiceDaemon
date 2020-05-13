@@ -12,15 +12,13 @@ namespace BackupServiceDaemon.Models
         Zip = 2
     }
     public class Job {
-        public int ID {get; set;}
-        public string Name {get; set;}
-        public string Period {get; set;}
+        public int TemplateID {get; set;}
+        public string TemplateName {get; set;}
+        public int? ID {get; set;}
         public BackupType Type {get; set;}
         public BackupFileType TargetFileType {get; set;}
-        public DateTime Start {get; set;}
-        public DateTime End {get; set;}
-        public bool Paused {get; set;}
         public int Retention {get; set;}
+        public DateTime[] Schedule {get; set;}
         public Path[] Sources {get; set;}
         public Path[] Targets {get; set;}
     }
