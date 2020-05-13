@@ -14,7 +14,7 @@ namespace BackupServiceDaemon.Models
     public class Job {
         public int TemplateID {get; set;}
         public string TemplateName {get; set;}
-        public int? ID {get; set;}
+        public int ID {get; set;}
         public BackupType Type {get; set;}
         public BackupFileType TargetFileType {get; set;}
         public int Retention {get; set;}
