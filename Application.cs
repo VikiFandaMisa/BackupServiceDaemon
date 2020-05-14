@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
-
+using System.Threading;
+using System.Collections.Generic;
 using BackupServiceDaemon.Models;
 using BackupServiceDaemon.BackupAlgorithms;
 
@@ -9,6 +10,8 @@ namespace BackupServiceDaemon
     public class Application
     {
         public static bool Exit { get; set; } = false;
+        static CancellationTokenSource source = new CancellationTokenSource();
+        static CancellationToken token = source.Token;
         static Application() {
             try {
                 SettingsService.Load();
@@ -21,6 +24,9 @@ namespace BackupServiceDaemon
                     SettingsService.Settings.Server += '/';
                 SettingsService.Save();
             }
+        }
+        public static void Tick() {
+            Jobs();
         }
 
         public static void Loop() {
@@ -42,13 +48,17 @@ namespace BackupServiceDaemon
                     Application.Register();
                 if (info == ConsoleKey.F2)
                     Application.Self();
-                if (info == ConsoleKey.F3)
+                if (info == ConsoleKey.F3) {
                     Application.Jobs();
+                    SetJobs();
+                }
                 if (info == ConsoleKey.F4)
                     RunJob(SettingsService.Settings.Jobs[0]);
                 if (info == ConsoleKey.F5)
                     SettingsService.Wipe();
             }
+
+
         }
 
         public static void Login() {
@@ -117,6 +127,22 @@ namespace BackupServiceDaemon
                 System.Console.WriteLine("Got {0} jobs", SettingsService.Settings.Jobs.Length);
             }
         }
+        public static void SetJobs() {
+            TimeSpan ts;
+            source.Cancel();
+            token = source.Token;
+            foreach (var job in SettingsService.Settings.Jobs) {
+                foreach (var time in job.Schedule) {                    
+                    if (time > DateTime.Now) {
+                        ts = time - DateTime.Now;
+                        Task.Delay(ts, token).ContinueWith(t => RunJob(job), token);
+                        System.Console.WriteLine(DateTime.Now);
+                        System.Console.WriteLine(ts);
+                        System.Console.WriteLine(time);
+                    }
+                }
+            }
+        }
         public static void RunJob(Job job) {
             foreach(Path source in job.Sources) {
                 foreach(Path target in job.Targets) {
@@ -128,8 +154,7 @@ namespace BackupServiceDaemon
                     else if (job.Type == BackupType.Differential)
                         RunBackup(DifferentialBackup(source.Directory, target.Directory, job.Retention));
                     else if (job.Type == BackupType.Incremental)
-                        RunBackup(IncrementalBackup(source.Directory, target.Directory, job.Retention));
-                    */
+                        RunBackup(IncrementalBackup(source.Directory, target.Directory, job.Retention));*/
                 }
             }
         }
