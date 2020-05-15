@@ -4,28 +4,32 @@ using System.IO;
 namespace BackupServiceDaemon.BackupAlgorithms
 {
     public class DifferentialBackup : IBackup {
-        public string Source { get; set; }
-        public string Target { get; set; }
-        public string LastFull { get; set; }
+        private string _Source { get; set; }
+        public string Source { get => this._Source; set => this._Source = Utils.ConvertSeparators(value); }
+        private string _Target { get; set; }
+        public string Target { get => this._Target; set => this._Target = Utils.ConvertSeparators(value); }
         public int Retention { get; set; }
         public void Run(IProgress<BackupProgress> progress) {
             System.Console.WriteLine("Differential backup");
-            progress.Report(new BackupProgress() { Percentage = 100 });
             this.Backup();
+            progress.Report(new BackupProgress() { Percentage = 100 });
         }
         public void Backup() {
-            /*
-            if (Utils.IsFirst(Target) || Utils.IsLimitReached(Target, Retention)) {
-                string target = Utils.GetTarget(SettingsService.Settings.PrefixFull, Target, Source);
-                Directory.CreateDirectory(target);
-                Utils.CopyDirectory(Source, target);
-            }
-            */
-            //else {
-                string target = Utils.GetTarget(SettingsService.Settings.Prefix, Target, Source);
-                Directory.CreateDirectory(target);
-                Utils.CopyChangedFiles(Source, target, Utils.FindLastFull(Target, Path.GetFileName(Source)));
-            //}
+            string target = Utils.GetTarget(SettingsService.Settings.PrefixFull, Target, Source);
+            Directory.CreateDirectory(target);
+
+            string last = Utils.GetLastBackup(Target, Path.GetFileName(Source));
+
+            Snapshot snapshot;
+            if (last == null)
+                snapshot = new Snapshot(target);
+            else
+                snapshot = Utils.LoadSnapshot(last);
+
+            Utils.CopyChangedFiles(Source, target, snapshot);
+
+            Directory.CreateDirectory(Path.Combine(target, ".BackupService"));
+            File.Copy(Path.Combine(last, ".BackupService", "snapshot.json"), Path.Combine(target, ".BackupService", "snapshot.json"));
         }
     }
 }
