@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
-
+using System.Threading;
+using System.Collections.Generic;
 using BackupServiceDaemon.Models;
 using BackupServiceDaemon.BackupAlgorithms;
 
@@ -9,6 +10,8 @@ namespace BackupServiceDaemon
     public class Application
     {
         public static bool Exit { get; set; } = false;
+        static CancellationTokenSource source = new CancellationTokenSource();
+        static CancellationToken token = source.Token;
         static Application() {
             try {
                 SettingsService.Load();
@@ -22,6 +25,9 @@ namespace BackupServiceDaemon
                 SettingsService.Save();
             }
         }
+        public static void Tick() {
+            Jobs();
+        }
 
         public static void Loop() {
             while (!Exit) {
@@ -32,13 +38,17 @@ namespace BackupServiceDaemon
                     Application.Register();
                 else if (info == ConsoleKey.F2)
                     Application.Self();
-                else if (info == ConsoleKey.F3)
+                else if (info == ConsoleKey.F3) {
                     Application.Jobs();
+                    SetJobs();
+                }
                 else if (info == ConsoleKey.F4)
                     RunJob(SettingsService.Settings.Jobs[0]);
                 else if (info == ConsoleKey.F5)
                     SettingsService.Wipe();
             }
+
+
         }
 
         public static void Login() {
@@ -105,6 +115,22 @@ namespace BackupServiceDaemon
             finally {
                 SettingsService.Save();
                 System.Console.WriteLine("Got {0} jobs", SettingsService.Settings.Jobs.Length);
+            }
+        }
+        public static void SetJobs() {
+            TimeSpan ts;
+            source.Cancel();
+            token = source.Token;
+            foreach (var job in SettingsService.Settings.Jobs) {
+                foreach (var time in job.Schedule) {                    
+                    if (time > DateTime.Now) {
+                        ts = time - DateTime.Now;
+                        Task.Delay(ts, token).ContinueWith(t => RunJob(job), token);
+                        System.Console.WriteLine(DateTime.Now);
+                        System.Console.WriteLine(ts);
+                        System.Console.WriteLine(time);
+                    }
+                }
             }
         }
         public static void RunJob(Job job) {
