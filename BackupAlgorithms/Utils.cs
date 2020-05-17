@@ -19,7 +19,7 @@ namespace BackupServiceDaemon.BackupAlgorithms
                 string abs = Path.Combine(path, dir);
                 string rel = GetRelativePath(abs, snapshot.Name);
                 if(!snapshot.DirExist(rel))
-                    Directory.CreateDirectory(abs);
+                    Directory.CreateDirectory(Path.Combine(target, rel));
                 CopyChangedFiles(abs, target, snapshot);
             }
         }
@@ -37,18 +37,8 @@ namespace BackupServiceDaemon.BackupAlgorithms
             return Path.Combine(target, lastTargets.Last());
         }
         public static string GetRelativePath(string path, string sourceName) {
-            string[] pathArr = path.Split(Path.DirectorySeparatorChar);
-            List<string> newPath = new List<string>();
-
-            bool save = false;
-            for (int i = 0; i < pathArr.Length; i++) {
-                if (save)
-                    newPath.Add(pathArr[i]);
-                if (pathArr[i].Contains(sourceName + '_'))
-                    save = true;
-            }
-
-            return Path.Combine(newPath.ToArray());
+             // FIX TWO DIRECTORIES WITH THE SAME NAME
+            return path.Remove(0, path.IndexOf(sourceName)).Replace(sourceName + Path.DirectorySeparatorChar, "");
         }
         public static string GetSuffix() {
             return '_' + DateTime.Now.ToString().Replace(':', '-').Replace(' ', '_');
@@ -77,43 +67,58 @@ namespace BackupServiceDaemon.BackupAlgorithms
         public string Name { get; set; }
         public List<string> Files { get; set; }
         public List<Snapshot> Directories { get; set; }
-        public Snapshot(string path) {
+        public Snapshot() { }
+
+        public Snapshot(string path, string relativeTo = null) {
             this.Name = Path.GetFileName(path);
             this.Files = new List<string>();
             this.Directories = new List<Snapshot>();
 
+            LoadStructure(path, relativeTo == null ? this.Name : relativeTo);
+        }
+        
+        private void LoadStructure(string path, string relativeTo) {
             foreach (var directory in Directory.GetDirectories(path))
                 if (directory != ".BackupService")
-                    this.Directories.Add(new Snapshot(Path.Combine(path, directory)));
+                    this.Directories.Add(new Snapshot(Path.Combine(path, directory), this.Name));
 
             foreach (var file in Directory.GetFiles(path))
-                this.Files.Add(Path.Combine(file));
+                this.Files.Add(Utils.GetRelativePath(file, relativeTo));
         }
 
-        public bool DirExist(string realtivePath) {
-            return GetDirectory(realtivePath) != null;
+        public async void Save(string target) {
+            string dir = Path.Combine(target, ".BackupService");
+            Directory.CreateDirectory(dir);
+            using (FileStream fs = File.Create(Path.Combine(dir, "snapshot.json")))
+                await JsonSerializer.SerializeAsync(fs, this);
         }
 
-        public Snapshot GetDirectory(string realtivePath) {
-            List<string> path = realtivePath.Split(Path.DirectorySeparatorChar).ToList();
+        public bool DirExist(string relativePath) {
+            return GetDirectory(relativePath) != null;
+        }
+
+        public Snapshot GetDirectory(string relativePath) {
+            List<string> path = relativePath.Split(Path.DirectorySeparatorChar).ToList();
             path.RemoveAll(s => s == "");
 
             return GetDirectory(path);
         }
 
-        public Snapshot GetDirectory(List<string> realtivePath) {
+        public Snapshot GetDirectory(List<string> relativePath) {
             Snapshot directory = this;
-            for(int i = 0; i < realtivePath.Count; i++) {
-                directory = directory.Directories.Where(dir => dir.Name == realtivePath[i]).First();
-                if (directory == null)
+            for(int i = 0; i < relativePath.Count; i++) {
+                var directoryEnumerable = directory.Directories.Where(dir => dir.Name == relativePath[i]);
+                if (directoryEnumerable.Count() != 0)
+                    directory = directory.Directories.Where(dir => dir.Name == relativePath[i]).First();
+                else
                     return null;
             }
 
             return directory;
         }
 
-        public bool FileExists(string realtivePath) {
-            List<string> path = realtivePath.Split(Path.DirectorySeparatorChar).ToList();
+        public bool FileExists(string relativePath) {
+            List<string> path = relativePath.Split(Path.DirectorySeparatorChar).ToList();
             path.RemoveAll(s => s == "");
             string filename = path.Last();
             path.RemoveAt(path.Count - 1);

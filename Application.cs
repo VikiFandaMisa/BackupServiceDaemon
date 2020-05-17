@@ -27,26 +27,16 @@ namespace BackupServiceDaemon
             while (!Exit) {
                 ConsoleKey info = Console.ReadKey().Key;
                 Console.WriteLine();
-
-                /*
-                if (info == ConsoleKey.F1)
-                    RunBackup(FullBackup());
-                if (info == ConsoleKey.F2)
-                    RunBackup(DifferentialBackup());
-                if (info == ConsoleKey.F3)
-                    RunBackup(IncrementalBackup());
-                */
-                 
                 
                 if (info == ConsoleKey.F1)
                     Application.Register();
-                if (info == ConsoleKey.F2)
+                else if (info == ConsoleKey.F2)
                     Application.Self();
-                if (info == ConsoleKey.F3)
+                else if (info == ConsoleKey.F3)
                     Application.Jobs();
-                if (info == ConsoleKey.F4)
+                else if (info == ConsoleKey.F4)
                     RunJob(SettingsService.Settings.Jobs[0]);
-                if (info == ConsoleKey.F5)
+                else if (info == ConsoleKey.F5)
                     SettingsService.Wipe();
             }
         }
@@ -121,21 +111,18 @@ namespace BackupServiceDaemon
             foreach(Path source in job.Sources) {
                 foreach(Path target in job.Targets) {
                     System.Console.WriteLine("{0} {1} {2}", job.Type, source.Directory, target.Directory);
-                    RunBackup(FullBackup(source.Directory, target.Directory, job.Retention));
-                    /*
                     if (job.Type == BackupType.Full)
                         RunBackup(FullBackup(source.Directory, target.Directory, job.Retention));
                     else if (job.Type == BackupType.Differential)
                         RunBackup(DifferentialBackup(source.Directory, target.Directory, job.Retention));
                     else if (job.Type == BackupType.Incremental)
                         RunBackup(IncrementalBackup(source.Directory, target.Directory, job.Retention));
-                    */
                 }
             }
         }
         public static void RunBackup(IBackup backup) {
             var progress = new Progress<BackupProgress>();
-            progress.ProgressChanged += ( s, e ) => System.Console.WriteLine(e.Percentage);
+            progress.ProgressChanged += ( s, e ) => System.Console.WriteLine("{0} - {1}", e.Percentage, e.Status);
 
             Task.Factory.StartNew(() => backup.Run(progress));
         }
