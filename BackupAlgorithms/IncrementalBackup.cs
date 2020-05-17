@@ -4,28 +4,33 @@ using System.IO;
 namespace BackupServiceDaemon.BackupAlgorithms
 {
     public class IncrementalBackup : IBackup {
-        public string Source { get; set; }
-        public string Target { get; set; }
-        public string LastBU { get; set; }
+        private string _Source { get; set; }
+        public string Source { get => this._Source; set => this._Source = Utils.ConvertSeparators(value); }
+        private string _Target { get; set; }
+        public string Target { get => this._Target; set => this._Target = Utils.ConvertSeparators(value); }
         public int Retention { get; set; }
         public void Run(IProgress<BackupProgress> progress) {
             System.Console.WriteLine("Incremental backup");
-            progress.Report(new BackupProgress() { Percentage = 100 });
             this.Backup();
+            progress.Report(new BackupProgress() { Percentage = 100 });
         }
         public void Backup() {
-            /*
-            if (Utils.IsLimitReached(Target, Retention) || Utils.IsFirst(Target)) {
-                string target = Utils.GetTarget(SettingsService.Settings.PrefixFull, Target, Source);
-                Directory.CreateDirectory(target);
-                Utils.CopyDirectory(Source, target);
-            }
-            */
-            //else {
-                string target = Utils.GetTarget(SettingsService.Settings.Prefix, Target, Source);
-                Directory.CreateDirectory(target);
-                Utils.CopyChangedFiles(Source, target, Utils.FindLast(Target, Source));
-            //}
+            string target = Utils.GetTarget(SettingsService.Settings.PrefixFull, Target, Source);
+            Directory.CreateDirectory(target);
+
+            string last = Utils.GetLastBackup(Target, Path.GetFileName(Source));
+
+            Snapshot snapshot;
+            if (last == null)
+                snapshot = new Snapshot(target);
+            else
+                snapshot = Utils.LoadSnapshot(last);
+
+
+            Utils.CopyChangedFiles(Source, target, snapshot);
+
+            Directory.CreateDirectory(Path.Combine(target, ".BackupService"));
+            Utils.CreateSnapshot(target);
         }
     }
 }

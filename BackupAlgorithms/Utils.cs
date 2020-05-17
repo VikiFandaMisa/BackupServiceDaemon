@@ -1,97 +1,129 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 
 namespace BackupServiceDaemon.BackupAlgorithms
 {
     public static class Utils {
-        public static void CopyDirectory(string source, string target) {
-            var stack = new Stack<TwoFolders>();
-            stack.Push(new TwoFolders(source, target));
+        public static void CopyChangedFiles(string path, string target, Snapshot snapshot) {
+            foreach (var file in Directory.GetFiles(path)) {
+                string abs = Path.Combine(path, file);
+                string rel = GetRelativePath(abs, snapshot.Name);
+                if(!snapshot.FileExists(rel))
+                    File.Copy(abs, Path.Combine(target, rel));
+            }
 
-            while (stack.Count > 0) {
-                var folders = stack.Pop();
-                Directory.CreateDirectory(folders.Target);
-                foreach (var file in Directory.GetFiles(folders.Source, "*.*"))
-                    File.Copy(file, Path.Combine(folders.Target, Path.GetFileName(file)));
-
-                foreach (var folder in Directory.GetDirectories(folders.Source))
-                    stack.Push(new TwoFolders(folder, Path.Combine(folders.Target, Path.GetFileName(folder))));
+            foreach (var dir in Directory.GetDirectories(path)) {
+                string abs = Path.Combine(path, dir);
+                string rel = GetRelativePath(abs, snapshot.Name);
+                if(!snapshot.DirExist(rel))
+                    Directory.CreateDirectory(abs);
+                CopyChangedFiles(abs, target, snapshot);
             }
         }
-        public static void CopyChangedFiles(string source, string target, string lastBU) {
-            var stack = new Stack<ThreeFolders>();
-            stack.Push(new ThreeFolders(source, target, lastBU));
+        public static string GetLastBackup(string target, string sourceName) {
+            List<string> lastTargets = new List<string>();
+            foreach (var dir in Directory.GetDirectories(target))
+                if (dir.Contains(sourceName + '_'))
+                    lastTargets.Add(dir);
 
-            while (stack.Count > 0) {
-                var folders = stack.Pop();
-                foreach (var fileS in Directory.GetFiles(folders.Source, "*.*")) {
-                    foreach (var fileL in Directory.GetFiles(folders.LastBU, "*.*")) {
-                        if ((File.GetLastWriteTimeUtc(fileS) != File.GetLastWriteTimeUtc(fileL))) {
-                            Directory.CreateDirectory(folders.Target);
-                            File.Copy(fileS, Path.Combine(folders.Target, Path.GetFileName(fileS)));
-                        }
-                    }
-                }
+            if (lastTargets.Count == 0)
+                return null;
 
-                foreach (var folder in Directory.GetDirectories(folders.Source))
-                    stack.Push(new ThreeFolders(folder, Path.Combine(folders.Target, Path.GetFileName(folder)), Path.Combine(folders.LastBU, Path.GetFileName(folder))));
-            }
-        }        
-        public static bool IsFirst(string Target) {
-            return (Directory.GetDirectories(Target).Length == 0);
+            lastTargets.Sort();
+
+            return Path.Combine(target, lastTargets.Last());
         }
-        public static bool IsLimitReached(string Target, int Retention) { 
-            return (Directory.GetDirectories(Target).Length >= Retention);
-        }		
-        public static string FindLast(string Target, string SourceFolder) {
-            DateTime Date = Directory.GetLastWriteTime(Path.Combine(Target, Directory.GetDirectories(Target)[0]));
-            string Last = null;
-            foreach (var dir in Directory.GetDirectories(Target)) {
-                if (Directory.GetLastWriteTime(Path.Combine(Target, dir)) > Date && dir.Contains(SourceFolder))
-                    Last = dir;
+        public static string GetRelativePath(string path, string sourceName) {
+            string[] pathArr = path.Split(Path.DirectorySeparatorChar);
+            List<string> newPath = new List<string>();
+
+            bool save = false;
+            for (int i = 0; i < pathArr.Length; i++) {
+                if (save)
+                    newPath.Add(pathArr[i]);
+                if (pathArr[i].Contains(sourceName + '_'))
+                    save = true;
             }
-            return Last;
-        }        
-        public static string FindLastFull(string Target,  string Source) {
-            Target = ConvertSeparators(Target);
-            string sourceFolder = Path.GetFileName(ConvertSeparators(Source));
-            DateTime Date = Directory.GetLastWriteTime(Path.Combine(Target, Directory.GetDirectories(Target)[0]));
-            string Last = null;
-            foreach (var dir in Directory.GetDirectories(Target)) {
-                if (Directory.GetLastWriteTime(Path.Combine(Target, dir)) > Date && dir.StartsWith(SettingsService.Settings.PrefixFull) && dir.Contains(sourceFolder))				
-                    Last = dir;
-            }
-            return Path.Combine(Target, Last);
+
+            return Path.Combine(newPath.ToArray());
         }
         public static string GetSuffix() {
-            return '_' + DateTime.UtcNow.ToString().Replace(':', '-').Replace(' ', '_');
+            return '_' + DateTime.Now.ToString().Replace(':', '-').Replace(' ', '_');
         }
-        public static string GetTarget(string prefix, string target, string source) {
-            return Path.Combine(ConvertSeparators(target), (prefix + Path.GetFileName(ConvertSeparators(source)) + Utils.GetSuffix()).Replace(Path.DirectorySeparatorChar.ToString(), ""));
+        public static string GetTarget(string prefix, string target, string sourceName) {
+            return Path.Combine(target, prefix + Path.GetFileName(sourceName) + GetSuffix());
         }
         public static string ConvertSeparators(string path) {
             return path.Replace('/', Path.DirectorySeparatorChar);
         }
-        private class TwoFolders {
-        public string Source { get; private set; }
-        public string Target { get; private set; }
-
-        public TwoFolders(string source, string target) {
-            Source = source;
-            Target = target;
+        public static Snapshot LoadSnapshot(string target) {
+            return JsonSerializer.Deserialize<Snapshot>(File.ReadAllText(Path.Combine(target, ".BackupService", "snapshot.json")));
+        }
+        public static async void CreateSnapshot(string target) {
+            Snapshot snapshot = new Snapshot(target);
+            string dir = Path.Combine(target, ".BackupService");
+            Directory.CreateDirectory(dir);
+            using (FileStream fs = File.Create(Path.Combine(dir, "snapshot.json")))
+            {
+                await JsonSerializer.SerializeAsync(fs, snapshot);
+            }
         }
     }
-    private class ThreeFolders {
-        public string Source { get; private set; }
-        public string Target { get; private set; }
-        public string LastBU { get; set; }
 
-        public ThreeFolders(string source, string target, string lastBU) {
-            Source = source;
-            Target = target;
-            LastBU = lastBU;
+    public class Snapshot {
+        public string Name { get; set; }
+        public List<string> Files { get; set; }
+        public List<Snapshot> Directories { get; set; }
+        public Snapshot(string path) {
+            this.Name = Path.GetFileName(path);
+            this.Files = new List<string>();
+            this.Directories = new List<Snapshot>();
+
+            foreach (var directory in Directory.GetDirectories(path))
+                if (directory != ".BackupService")
+                    this.Directories.Add(new Snapshot(Path.Combine(path, directory)));
+
+            foreach (var file in Directory.GetFiles(path))
+                this.Files.Add(Path.Combine(file));
+        }
+
+        public bool DirExist(string realtivePath) {
+            return GetDirectory(realtivePath) != null;
+        }
+
+        public Snapshot GetDirectory(string realtivePath) {
+            List<string> path = realtivePath.Split(Path.DirectorySeparatorChar).ToList();
+            path.RemoveAll(s => s == "");
+
+            return GetDirectory(path);
+        }
+
+        public Snapshot GetDirectory(List<string> realtivePath) {
+            Snapshot directory = this;
+            for(int i = 0; i < realtivePath.Count; i++) {
+                directory = directory.Directories.Where(dir => dir.Name == realtivePath[i]).First();
+                if (directory == null)
+                    return null;
+            }
+
+            return directory;
+        }
+
+        public bool FileExists(string realtivePath) {
+            List<string> path = realtivePath.Split(Path.DirectorySeparatorChar).ToList();
+            path.RemoveAll(s => s == "");
+            string filename = path.Last();
+            path.RemoveAt(path.Count - 1);
+
+            Snapshot directory = GetDirectory(path);
+            
+            if (directory == null)
+                return false;
+
+            return directory.Files.Contains(filename);
         }
     }
-    }	
 }

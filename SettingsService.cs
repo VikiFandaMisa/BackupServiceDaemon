@@ -25,8 +25,6 @@ namespace BackupServiceDaemon
             Settings = new Settings();
         }
         public static async void Save() {
-            var options = new JsonWriterOptions { Indented = true };
-
             using (FileStream fs = File.Create(SettingsFile))
             {
                 await JsonSerializer.SerializeAsync(fs, Settings);
