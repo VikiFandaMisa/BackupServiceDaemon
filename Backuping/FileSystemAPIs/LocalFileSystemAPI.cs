@@ -21,5 +21,14 @@ namespace BackupServiceDaemon.Backuping.FileSystemAPIs
         public string GetFileName(string path) {
             return Path.GetFileName(path);
         }
+        public string GetRelativePath(string path, string basePath) {
+            return Utils.LocalRelativePath(path, basePath);
+        }
+        public string ConvertSeparators(string path) {
+            return path.Replace('/', Path.DirectorySeparatorChar);
+        }
+        public void CreateTarget(string target) {
+            CreateDirectory(target);
+        }
     }
 }

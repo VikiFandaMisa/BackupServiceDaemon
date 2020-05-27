@@ -133,8 +133,8 @@ namespace BackupServiceDaemon
             }
         }
         public static void RunJob(Job job) {
-            foreach(Path source in job.Sources) {
-                foreach(Path target in job.Targets) {
+            foreach(Path target in job.Targets) {
+                foreach(Path source in job.Sources) {
                     IFileSystemAPI fileSystemAPI;
                     //if (target.Network == "") {
                         fileSystemAPI = new LocalFileSystemAPI();
@@ -145,15 +145,15 @@ namespace BackupServiceDaemon
 
                     if (job.Type == BackupType.Full)
                         RunBackup(
-                            new FullBackup(source.Directory, target.Directory, fileSystemAPI)
+                            new FullBackup(source.Directory, target.Directory, job.ID, fileSystemAPI)
                         );
                     else if (job.Type == BackupType.Differential)
                         RunBackup(
-                            new DifferentialBackup(source.Directory, target.Directory, fileSystemAPI, job.Retention)
+                            new DifferentialBackup(source.Directory, target.Directory, job.ID, fileSystemAPI, job.Retention)
                         );
                     else if (job.Type == BackupType.Incremental)
                         RunBackup(
-                            new IncrementalBackup(source.Directory, target.Directory, fileSystemAPI, job.Retention)
+                            new IncrementalBackup(source.Directory, target.Directory, job.ID, fileSystemAPI, job.Retention)
                         );
                 }
             }
