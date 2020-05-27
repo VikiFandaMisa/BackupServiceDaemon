@@ -135,51 +135,34 @@ namespace BackupServiceDaemon
         public static void RunJob(Job job) {
             foreach(Path source in job.Sources) {
                 foreach(Path target in job.Targets) {
-                    IFileSystemAPI FSAPI;
+                    IFileSystemAPI fileSystemAPI;
                     //if (target.Network == "") {
-                        FSAPI = new LocalFileSystemAPI();
+                        fileSystemAPI = new LocalFileSystemAPI();
                     /*}
                     else {
 
                     }*/
 
                     if (job.Type == BackupType.Full)
-                        RunBackup(FullBackup(source.Directory, target.Directory, FSAPI));
+                        RunBackup(
+                            new FullBackup(source.Directory, target.Directory, fileSystemAPI)
+                        );
                     else if (job.Type == BackupType.Differential)
-                        RunBackup(DifferentialBackup(source.Directory, target.Directory, job.Retention, FSAPI));
+                        RunBackup(
+                            new DifferentialBackup(source.Directory, target.Directory, fileSystemAPI, job.Retention)
+                        );
                     else if (job.Type == BackupType.Incremental)
-                        RunBackup(IncrementalBackup(source.Directory, target.Directory, job.Retention, FSAPI));
+                        RunBackup(
+                            new IncrementalBackup(source.Directory, target.Directory, fileSystemAPI, job.Retention)
+                        );
                 }
             }
         }
-        public static void RunBackup(IBackup backup) {
+        public static void RunBackup(Backup backup) {
             var progress = new Progress<BackupProgress>();
             progress.ProgressChanged += ( s, e ) => System.Console.WriteLine("{0} - {1}", e.Percentage, e.Status);
 
             Task.Factory.StartNew(() => backup.Run(progress));
-        }
-        public static IBackup FullBackup(string source, string target, IFileSystemAPI FSAPI) {
-            return new FullBackup() {
-                Source = source,
-                Target = target,
-                FileSystemAPI = FSAPI
-            };
-        }
-        public static IBackup DifferentialBackup(string source, string target, int retention, IFileSystemAPI FSAPI) {
-            return new DifferentialBackup() {
-                Source = source,
-                Target = target,
-                Retention = retention,
-                FileSystemAPI = FSAPI
-            };
-        }
-        public static IBackup IncrementalBackup(string source, string target, int retention, IFileSystemAPI FSAPI) {
-            return new IncrementalBackup() {
-                Source = source,
-                Target = target,
-                Retention = retention,
-                FileSystemAPI = FSAPI
-            };
         }
     }
 }

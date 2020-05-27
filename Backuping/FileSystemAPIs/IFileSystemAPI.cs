@@ -1,6 +1,8 @@
+using System;
+
 namespace BackupServiceDaemon.Backuping.FileSystemAPIs
 {
-    public interface IFileSystemAPI
+    public interface IFileSystemAPI : IDisposable
     {
         string[] GetFiles(string directory);
         string[] GetDirectories(string directory);
@@ -8,5 +10,6 @@ namespace BackupServiceDaemon.Backuping.FileSystemAPIs
         void CopyFile(string source, string target);
         string CombinePath(params string[] path);
         string GetFileName(string path);
+        void IDisposable.Dispose() { }
     }
 }

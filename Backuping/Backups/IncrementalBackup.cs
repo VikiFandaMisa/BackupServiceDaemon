@@ -1,22 +1,14 @@
-using System;
 using System.IO;
 using BackupServiceDaemon.Backuping.FileSystemAPIs;
 
 namespace BackupServiceDaemon.Backuping.Backups
 {
-    public class IncrementalBackup : IBackup {
-        private string _Source { get; set; }
-        public string Source { get => this._Source; set => this._Source = Utils.ConvertSeparators(value); }
-        private string _Target { get; set; }
-        public string Target { get => this._Target; set => this._Target = Utils.ConvertSeparators(value); }
-        public int Retention { get; set; }
-        public IFileSystemAPI FileSystemAPI { get; set; }
-        public void Run(IProgress<BackupProgress> progress) {
-            progress.Report(new BackupProgress() { Percentage = 0, Status = "Started incremental backup" });
-            this.Backup();
-            progress.Report(new BackupProgress() { Percentage = 100, Status = "Done" });
-        }
-        public void Backup() {
+    public class IncrementalBackup : RetentionalBackup {
+        public IncrementalBackup(string source, string target, IFileSystemAPI fileSystemAPI, int retention)
+            : base(source, target, fileSystemAPI, retention) { }
+        protected override void BackupAlgorithm() {
+            Progress.Report(new BackupProgress() { Percentage = 0, Status = "Started incremental backup" });
+            
             string target = Utils.GetTarget("Inc_", Target, Source);
             string last = Utils.GetLastBackup(Target, Path.GetFileName(Source));
 
@@ -32,6 +24,8 @@ namespace BackupServiceDaemon.Backuping.Backups
 
             // BROKEN
             (new Snapshot(target) { Name = snapshot.Name }).Save(target);
+
+            Progress.Report(new BackupProgress() { Percentage = 100, Status = "Done" });
         }
     }
 }
