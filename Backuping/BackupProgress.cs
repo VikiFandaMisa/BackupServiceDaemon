@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace BackupServiceDaemon.BackupAlgorithms
+namespace BackupServiceDaemon.Backuping
 {
     public class BackupProgress
     {

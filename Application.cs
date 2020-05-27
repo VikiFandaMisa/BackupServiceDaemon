@@ -2,16 +2,19 @@ using System;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Collections.Generic;
+
 using BackupServiceDaemon.Models;
-using BackupServiceDaemon.BackupAlgorithms;
+using BackupServiceDaemon.Backuping;
+using BackupServiceDaemon.Backuping.Backups;
+using BackupServiceDaemon.Backuping.FileSystemAPIs;
 
 namespace BackupServiceDaemon
 {
     public class Application
     {
         public static bool Exit { get; set; } = false;
-        static CancellationTokenSource source = new CancellationTokenSource();
-        static CancellationToken token = source.Token;
+        static CancellationTokenSource Source = new CancellationTokenSource();
+        static CancellationToken CancellationToken = Source.Token;
         static Application() {
             try {
                 SettingsService.Load();
@@ -47,8 +50,6 @@ namespace BackupServiceDaemon
                 else if (info == ConsoleKey.F5)
                     SettingsService.Wipe();
             }
-
-
         }
 
         public static void Login() {
@@ -119,13 +120,12 @@ namespace BackupServiceDaemon
         }
         public static void SetJobs() {
             TimeSpan ts;
-            source.Cancel();
-            token = source.Token;
+            Source.Cancel();
             foreach (var job in SettingsService.Settings.Jobs) {
                 foreach (var time in job.Schedule) {                    
                     if (time > DateTime.Now) {
                         ts = time - DateTime.Now;
-                        Task.Delay(ts, token).ContinueWith(t => RunJob(job), token);
+                        Task.Delay(ts, Source.Token).ContinueWith(t => RunJob(job), Source.Token);
                         System.Console.WriteLine(DateTime.Now);
                         System.Console.WriteLine(ts);
                         System.Console.WriteLine(time);
@@ -136,13 +136,20 @@ namespace BackupServiceDaemon
         public static void RunJob(Job job) {
             foreach(Path source in job.Sources) {
                 foreach(Path target in job.Targets) {
-                    System.Console.WriteLine("{0} {1} {2}", job.Type, source.Directory, target.Directory);
+                    IFileSystemAPI FSAPI;
+                    //if (target.Network == "") {
+                        FSAPI = new LocalFileSystemAPI();
+                    /*}
+                    else {
+
+                    }*/
+
                     if (job.Type == BackupType.Full)
-                        RunBackup(FullBackup(source.Directory, target.Directory, job.Retention));
+                        RunBackup(FullBackup(source.Directory, target.Directory, FSAPI));
                     else if (job.Type == BackupType.Differential)
-                        RunBackup(DifferentialBackup(source.Directory, target.Directory, job.Retention));
+                        RunBackup(DifferentialBackup(source.Directory, target.Directory, job.Retention, FSAPI));
                     else if (job.Type == BackupType.Incremental)
-                        RunBackup(IncrementalBackup(source.Directory, target.Directory, job.Retention));
+                        RunBackup(IncrementalBackup(source.Directory, target.Directory, job.Retention, FSAPI));
                 }
             }
         }
@@ -152,14 +159,28 @@ namespace BackupServiceDaemon
 
             Task.Factory.StartNew(() => backup.Run(progress));
         }
-        public static IBackup FullBackup(string source, string target, int retention) {
-            return new FullBackup() { Source = source, Target = target };
+        public static IBackup FullBackup(string source, string target, IFileSystemAPI FSAPI) {
+            return new FullBackup() {
+                Source = source,
+                Target = target,
+                FileSystemAPI = FSAPI
+            };
         }
-        public static IBackup DifferentialBackup(string source, string target, int retention) {
-            return new DifferentialBackup() { Source = source, Target = target, Retention = retention };
+        public static IBackup DifferentialBackup(string source, string target, int retention, IFileSystemAPI FSAPI) {
+            return new DifferentialBackup() {
+                Source = source,
+                Target = target,
+                Retention = retention,
+                FileSystemAPI = FSAPI
+            };
         }
-        public static IBackup IncrementalBackup(string source, string target, int retention) {
-            return new IncrementalBackup() { Source = source, Target = target, Retention = retention };
+        public static IBackup IncrementalBackup(string source, string target, int retention, IFileSystemAPI FSAPI) {
+            return new IncrementalBackup() {
+                Source = source,
+                Target = target,
+                Retention = retention,
+                FileSystemAPI = FSAPI
+            };
         }
     }
 }

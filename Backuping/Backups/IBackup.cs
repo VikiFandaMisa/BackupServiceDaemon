@@ -1,6 +1,6 @@
 using System;
 
-namespace BackupServiceDaemon.BackupAlgorithms
+namespace BackupServiceDaemon.Backuping.Backups
 {
     public interface IBackup
     {

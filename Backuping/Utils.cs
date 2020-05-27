@@ -4,23 +4,25 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 
-namespace BackupServiceDaemon.BackupAlgorithms
+using BackupServiceDaemon.Backuping.FileSystemAPIs;
+
+namespace BackupServiceDaemon.Backuping
 {
     public static class Utils {
-        public static void CopyChangedFiles(string path, string target, Snapshot snapshot) {
+        public static void CopyChangedFiles(string path, string target, Snapshot snapshot, IFileSystemAPI targetFS) {
             foreach (var file in Directory.GetFiles(path)) {
                 string abs = Path.Combine(path, file);
                 string rel = GetRelativePath(abs, snapshot.Name);
                 if(!snapshot.FileExists(rel))
-                    File.Copy(abs, Path.Combine(target, rel));
+                    targetFS.CopyFile(abs, targetFS.CombinePath(target, rel));
             }
 
             foreach (var dir in Directory.GetDirectories(path)) {
                 string abs = Path.Combine(path, dir);
                 string rel = GetRelativePath(abs, snapshot.Name);
                 if(!snapshot.DirExist(rel))
-                    Directory.CreateDirectory(Path.Combine(target, rel));
-                CopyChangedFiles(abs, target, snapshot);
+                    targetFS.CreateDirectory(targetFS.CombinePath(target, rel));
+                CopyChangedFiles(abs, target, snapshot, targetFS);
             }
         }
         public static string GetLastBackup(string target, string sourceName) {
