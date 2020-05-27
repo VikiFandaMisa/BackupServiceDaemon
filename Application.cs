@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using System.Threading;
-using System.Collections.Generic;
 
 using BackupServiceDaemon.Models;
 using BackupServiceDaemon.Backuping;
@@ -74,9 +73,9 @@ namespace BackupServiceDaemon
         public static void Register() {
             try {
                 Computer self = APIService.Register(new ComputerRegistration() {
-                    Hostname = PCInfo.GetHostname(),
-                    MAC = PCInfo.GetMAC(),
-                    IP = PCInfo.GetIP()
+                    Hostname = ComputerInfo.GetHostname(),
+                    MAC = ComputerInfo.GetMAC(),
+                    IP = ComputerInfo.GetIP()
                 });
                 SettingsService.Settings.ID = self.ID;
             }

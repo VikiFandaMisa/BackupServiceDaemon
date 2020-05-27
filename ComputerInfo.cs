@@ -1,15 +1,11 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.NetworkInformation;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace BackupServiceDaemon
 {
-    public static class PCInfo
+    public static class ComputerInfo
     {
         public static string GetHostname() {
             return Environment.MachineName;

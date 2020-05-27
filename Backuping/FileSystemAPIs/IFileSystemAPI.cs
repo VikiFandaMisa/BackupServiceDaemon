@@ -1,5 +1,3 @@
-using System;
-
 namespace BackupServiceDaemon.Backuping.FileSystemAPIs
 {
     public interface IFileSystemAPI
