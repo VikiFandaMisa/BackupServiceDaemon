@@ -1,28 +1,46 @@
 using System.IO;
+using Ionic.Zip;
 
 namespace BackupServiceDaemon.Backuping.FileSystemAPIs
 {
     public class LocalZIPFileSystemAPI : IFileSystemAPI {
-        public void CreateDirectory(string directory) {
-            throw new System.NotImplementedException();
+        public ZipFile Zip { get; set; }
+        public string Target { get; set; }
+        public const char SEPARATOR = '/';
+        public void CreateDirectory(string directory) {            
+            Zip.AddDirectory(directory);            
         }
         public void CopyFile(string source, string target) {
-            throw new System.NotImplementedException();
+            string t = target.Replace(Target,"");
+            Zip.AddFile(source, t);
         }
         public string CombinePath(params string[] path) {
-            throw new System.NotImplementedException();
+            string result = "";
+            foreach (var item in path)
+            {
+                if (!item.EndsWith(SEPARATOR))
+                    result += SEPARATOR + item;
+            }
+            return result + SEPARATOR;
         }
         public string GetFileName(string path) {
-            throw new System.NotImplementedException();
+            string name = path;
+            if (name.EndsWith(SEPARATOR))
+                name = name.Substring(0, name.Length - 1);
+            name = name.Substring(name.LastIndexOf(SEPARATOR));
+            return name;
         }
         public string GetRelativePath(string path, string basePath) {
-            throw new System.NotImplementedException();
+            return Utils.UriRelativePath(path, basePath);
         }
         public string ConvertSeparators(string path) {
-            throw new System.NotImplementedException();
+            return path;
         }
         public void CreateTarget(string target) {
-            throw new System.NotImplementedException();
+            this.Target = target;
+        }
+        public void Dispose() {
+            Zip.Save(Target + ".zip");
         }
     }
 }
