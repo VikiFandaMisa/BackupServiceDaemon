@@ -11,25 +11,6 @@ namespace BackupServiceDaemon.Backuping.FileSystemAPIs
         public const char SEPARATOR = '/';
         public NetworkCredential creds { get; set; }
         public string server { get; set; }
-        public string[] GetFiles(string directory) {
-            FtpWebRequest request = (FtpWebRequest)WebRequest.Create(server + directory);
-            request.Method = WebRequestMethods.Ftp.ListDirectoryDetails;
-            request.Credentials = creds;
-            FtpWebResponse response = (FtpWebResponse)request.GetResponse();
-            Stream responseStream = response.GetResponseStream();            
-            var list = new List<string>();
-            using (StreamReader reader = new StreamReader(responseStream)) {
-                string file;
-                while ((file = reader.ReadLine()) != null) {
-                    list.Add(file);
-                }
-            }
-            return list.ToArray();
-        }
-        public string[] GetDirectories(string directory) {
-            //nejde
-            throw new System.NotImplementedException();
-        }
         public void CreateDirectory(string directory) {
             WebRequest request = WebRequest.Create(directory);
             request.Method = WebRequestMethods.Ftp.MakeDirectory;
