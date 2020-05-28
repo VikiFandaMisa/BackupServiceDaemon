@@ -117,5 +117,29 @@ namespace BackupServiceDaemon
                 }
             }
         }
+        public static void SendReport(LogItem report) {
+            using (var handler = new HttpClientHandler()) {
+                handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+                
+                using (var client = new HttpClient(handler)) {
+                    var request = new HttpRequestMessage() {
+                        RequestUri = new Uri(SettingsService.Settings.Server + "log"),
+                        Method = HttpMethod.Post,
+                    };
+                    request.Content = new ObjectContent(typeof(LogItem), report, new JsonMediaTypeFormatter(), new MediaTypeHeaderValue("application/json"));
+
+                    var requestTask = client.SendAsync(request);
+                    requestTask.Wait();
+                    
+                    if (requestTask.Result.IsSuccessStatusCode) {
+                        var readTask = requestTask.Result.Content.ReadAsAsync<Computer>();
+                        readTask.Wait();
+
+                        return readTask.Result;
+                    }
+                    throw new Exception(requestTask.Result.ToString());
+                }
+            }
+        }
     }
 }
