@@ -162,7 +162,12 @@ namespace BackupServiceDaemon
             var progress = new Progress<BackupProgress>();
             progress.ProgressChanged += ( s, e ) => System.Console.WriteLine("{0} - {1}", e.Percentage, e.Status);
             progress.ProgressChanged += ( s, e ) => {
-                LogItem report = new LogItem() { JobID = backup.JobID, Date = DateTime.Now, Message = e.Percentage.ToString() };
+                LogItem report = new LogItem() {
+                    JobID = backup.JobID,
+                    Date = DateTime.Now,
+                    Message = String.Format("{0} to {1} @ {2}%", backup.Source, backup.Target, e.Percentage),
+                    Type = MessageType.Job
+                };
                 APIService.SendReport(report);
             };
 

@@ -131,13 +131,8 @@ namespace BackupServiceDaemon
                     var requestTask = client.SendAsync(request);
                     requestTask.Wait();
                     
-                    if (requestTask.Result.IsSuccessStatusCode) {
-                        var readTask = requestTask.Result.Content.ReadAsAsync<Computer>();
-                        readTask.Wait();
-
-                        return readTask.Result;
-                    }
-                    throw new Exception(requestTask.Result.ToString());
+                    if (!requestTask.Result.IsSuccessStatusCode)
+                        throw new Exception(requestTask.Result.ToString());
                 }
             }
         }
