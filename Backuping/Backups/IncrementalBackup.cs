@@ -9,18 +9,14 @@ namespace BackupServiceDaemon.Backuping.Backups
         protected override void BackupAlgorithm() {
             Progress.Report(new BackupProgress() { Percentage = 0, Status = "Started incremental backup" });
             
-            string last = null;
+            Snapshot snapshot = LoadSnapshot();
+            
+            var addedDeleted = CopyChangedFiles(snapshot);
 
-            Snapshot snapshot;
-            if (last == null)
-                snapshot = new Snapshot(Target) { Name = Path.GetFileName(Source)};
-            else
-                snapshot = LoadSnapshot();
+            snapshot.Union(addedDeleted.Item1);
+            snapshot.Subtract(addedDeleted.Item2);
 
-            CopyChangedFiles(Source, snapshot);
-
-            // BROKEN
-            SaveSnapshot(new Snapshot(Target) { Name = snapshot.Name });
+            SaveSnapshot(snapshot);
 
             Progress.Report(new BackupProgress() { Percentage = 100, Status = "Done" });
         }

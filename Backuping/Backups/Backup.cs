@@ -13,6 +13,8 @@ namespace BackupServiceDaemon.Backuping.Backups
         public string Source { get; set; }
         public string Target { get; set; }
         public int JobID { get; set; }
+        protected string ConfigName { get { return JobID + ".json"; } }
+        protected string ConfigDirectory { get { return SettingsService.Settings.ConfigurationFolderName; } }
         protected IFileSystemAPI FileSystemAPI { get; set; }
         protected IProgress<BackupProgress> Progress { get; set; }
         public Backup(string source, string target, int jobID, IFileSystemAPI fileSystemAPI) {
@@ -28,34 +30,33 @@ namespace BackupServiceDaemon.Backuping.Backups
             FileSystemAPI.Dispose();
         }
         protected abstract void BackupAlgorithm();
-        protected void CopyChangedFiles(string path, Snapshot snapshot) {
+        protected (Snapshot, Snapshot) CopyChangedFiles(Snapshot compareTo) { // ( added, deleted )
+            var added = new Snapshot(compareTo.Name);
+            var deleted = new Snapshot(compareTo.Name);
+
+            CopyChangedFiles(Source, compareTo, added, deleted);
+
+            return (added, deleted);
+        }
+        private void CopyChangedFiles(string path, Snapshot compareTo, Snapshot added, Snapshot deleted) {
             foreach (var file in Directory.GetFiles(path)) {
-                string abs = Path.Combine(path, file);
-                string rel = FileSystemAPI.GetRelativePath(abs, this.Target);
-                if (!snapshot.FileExists(rel))
-                    FileSystemAPI.CopyFile(abs, FileSystemAPI.CombinePath(Target, rel));
+                string absolute = Path.Combine(path, file);
+                string relative = Utils.UriRelativePath(absolute, Source);
+                if (!compareTo.FileExists(relative)) {
+                    added.AddFile(relative);
+                    FileSystemAPI.CopyFile(absolute, FileSystemAPI.CombinePath(Target, FileSystemAPI.ConvertSeparators(relative)));
+                }
             }
 
             foreach (var dir in Directory.GetDirectories(path)) {
-                string abs = Path.Combine(path, dir);
-                string rel = FileSystemAPI.GetRelativePath(abs, this.Target);
-                if (!snapshot.DirExist(rel))
-                    FileSystemAPI.CreateDirectory(FileSystemAPI.CombinePath(Target, rel));
-                CopyChangedFiles(abs, snapshot);
+                string absolute = Path.Combine(path, dir);
+                string relative = Utils.UriRelativePath(absolute, Source);
+                if (!compareTo.DirExist(relative)) {
+                    added.AddDirectory(relative);
+                    FileSystemAPI.CreateDirectory(FileSystemAPI.CombinePath(Target, FileSystemAPI.ConvertSeparators(relative)));
+                } 
+                CopyChangedFiles(path, compareTo, added, deleted);
             }
-        }
-        protected string GetLastBackup() {
-            List<string> lastTargets = new List<string>();
-            foreach (var dir in Directory.GetDirectories(Target))
-                if (dir.Contains(FileSystemAPI.GetFileName(Source) + '_'))
-                    lastTargets.Add(dir);
-
-            if (lastTargets.Count == 0)
-                return null;
-
-            lastTargets.Sort();
-
-            return Path.Combine(Target, lastTargets.Last());
         }
         protected string GetTarget(string targetDirectory) {
             string date = DateTime.Now.ToString()
@@ -64,22 +65,16 @@ namespace BackupServiceDaemon.Backuping.Backups
             return FileSystemAPI.CombinePath(targetDirectory, String.Join('_', JobID, FileSystemAPI.GetFileName(Source), date));
         }
         protected Snapshot LoadSnapshot() {
-            return JsonSerializer.Deserialize<Snapshot>(File.ReadAllText(Path.Combine(this.Source, ".BackupService", JobID + ".json")));
+            string path = Path.Combine(Source, ConfigDirectory, ConfigName);
+            if (!File.Exists(path))
+                return null;
+            return JsonSerializer.Deserialize<Snapshot>(File.ReadAllText(path));
         }
-        public async void SaveSnapshot(Snapshot snapshot) {
-            string dir = FileSystemAPI.CombinePath(Source, ".BackupService");
-            Directory.CreateDirectory(dir);
-            using (FileStream fs = File.Create(FileSystemAPI.CombinePath(dir, JobID + ".json")))
+        public async void SaveSnapshot(Snapshot snapshot) { 
+            string confDir = Path.Combine(Source, ConfigDirectory);
+            Directory.CreateDirectory(confDir);
+            using (FileStream fs = File.Create(Path.Combine(confDir, ConfigName)))
                 await JsonSerializer.SerializeAsync(fs, snapshot);
-        }
-        protected async void CreateSnapshot() {
-            Snapshot snapshot = new Snapshot(Source);
-            string dir = Path.Combine(Source, ".BackupService");
-            Directory.CreateDirectory(dir);
-            using (FileStream fs = File.Create(Path.Combine(dir, JobID + ".json")))
-            {
-                await JsonSerializer.SerializeAsync(fs, snapshot);
-            }
         }
     }
 }

@@ -10,7 +10,7 @@ namespace BackupServiceDaemon.Backuping.Backups
         protected override void BackupAlgorithm() {
             Progress.Report(new BackupProgress() { Percentage = 0, Status = "Started full backup" });
 
-            CopyChangedFiles(Source, new Snapshot(Target) { Name = Path.GetFileName(Source)});
+            CopyChangedFiles(new Snapshot(Path.GetFileName(Source)));
 
             Progress.Report(new BackupProgress() { Percentage = 100, Status = "Done" });
         }
