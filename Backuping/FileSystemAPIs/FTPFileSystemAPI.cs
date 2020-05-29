@@ -50,9 +50,6 @@ namespace BackupServiceDaemon.Backuping.FileSystemAPIs
             name = name.Substring(name.LastIndexOf(SEPARATOR));
             return name;
         }
-        public string GetRelativePath(string path, string basePath) {
-            return Utils.UriRelativePath(path, basePath);
-        }
         public string ConvertSeparators(string path) {
             return path;
         }

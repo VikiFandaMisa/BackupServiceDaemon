@@ -8,7 +8,6 @@ namespace BackupServiceDaemon.Backuping.FileSystemAPIs
         void CopyFile(string source, string target);
         string CombinePath(params string[] path);
         string GetFileName(string path);
-        string GetRelativePath(string path, string basePath);
         string ConvertSeparators(string path);
         void CreateTarget(string target);
         void IDisposable.Dispose() { }

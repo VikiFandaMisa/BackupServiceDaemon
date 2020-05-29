@@ -15,9 +15,6 @@ namespace BackupServiceDaemon.Backuping.FileSystemAPIs
         public string GetFileName(string path) {
             throw new System.NotImplementedException();
         }
-        public string GetRelativePath(string path, string basePath) {
-            throw new System.NotImplementedException();
-        }
         public string ConvertSeparators(string path) {
             throw new System.NotImplementedException();
         }
