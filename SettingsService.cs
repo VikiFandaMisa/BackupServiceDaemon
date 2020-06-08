@@ -39,6 +39,7 @@ namespace BackupServiceDaemon
 
     public class Settings
     {
+        public string ConfigurationFolderName { get; set; } = ".BackupService";
         public int? ID { get; set; }
         public string Server { get; set; }
         public BackupServiceDaemon.Models.Job[] Jobs {get; set;}

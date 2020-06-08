@@ -1,42 +1,20 @@
-using System;
 using System.IO;
 
 using BackupServiceDaemon.Backuping.FileSystemAPIs;
 
 namespace BackupServiceDaemon.Backuping.Backups
 {
-    public class DifferentialBackup : IBackup {
-        private string _Source { get; set; }
-        public string Source { get => this._Source; set => this._Source = Utils.ConvertSeparators(value); }
-        private string _Target { get; set; }
-        public string Target { get => this._Target; set => this._Target = Utils.ConvertSeparators(value); }
-        public int Retention { get; set; }
-        public IFileSystemAPI FileSystemAPI { get; set; }
-        public void Run(IProgress<BackupProgress> progress) {
-            progress.Report(new BackupProgress() { Percentage = 0, Status = "Started differential backup" });
-            this.Backup();
-            progress.Report(new BackupProgress() { Percentage = 100, Status = "Done" });
-        }
-        public void Backup() {
-            string target = Utils.GetTarget("Diff_", Target, Source);
-            string last = Utils.GetLastBackup(Target, Path.GetFileName(Source));
+    public class DifferentialBackup : RetentionalBackup {
+        public DifferentialBackup(string source, string target, int jobID, IFileSystemAPI fileSystemAPI, int retention)
+            : base(source, target, jobID, fileSystemAPI, retention) { }
+        protected override void BackupAlgorithm() {
+            Progress.Report(new BackupProgress() { Percentage = 0, Status = "Started differential backup" });
 
-            FileSystemAPI.CreateDirectory(target);
-
-            Snapshot snapshot;
-            if (last == null)
-                snapshot = new Snapshot(target) { Name = Path.GetFileName(Source)};
-            else
-                snapshot = Utils.LoadSnapshot(last);
+            Snapshot snapshot = LoadSnapshot();
             
-            Utils.CopyChangedFiles(Source, target, snapshot, FileSystemAPI);
+            CopyChangedFiles(snapshot);
 
-            FileSystemAPI.CreateDirectory(FileSystemAPI.CombinePath(target, ".BackupService"));
-
-            if (last == null)
-                (new Snapshot(target) { Name = snapshot.Name }).Save(target);
-            else
-                File.Copy(Path.Combine(last, ".BackupService", "snapshot.json"), Path.Combine(target, ".BackupService", "snapshot.json"));
+            Progress.Report(new BackupProgress() { Percentage = 100, Status = "Done" });
         }
     }
 }
