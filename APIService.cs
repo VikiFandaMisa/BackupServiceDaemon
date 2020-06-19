@@ -123,6 +123,7 @@ namespace BackupServiceDaemon {
                         RequestUri = new Uri(SettingsService.Settings.Server + "log"),
                         Method = HttpMethod.Post,
                     };
+                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", Token);
                     request.Content = new ObjectContent(typeof(LogItem), report, new JsonMediaTypeFormatter(), new MediaTypeHeaderValue("application/json"));
 
                     var requestTask = client.SendAsync(request);

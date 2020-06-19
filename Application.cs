@@ -21,6 +21,7 @@ namespace BackupServiceDaemon {
                 SettingsService.Settings.Server = Console.ReadLine().Trim();
                 if (SettingsService.Settings.Server[SettingsService.Settings.Server.Length - 1] != '/')
                     SettingsService.Settings.Server += '/';
+                Register();
                 SettingsService.Save();
             }
             Login();
@@ -102,6 +103,7 @@ namespace BackupServiceDaemon {
         public static void SetJobs() {
             TimeSpan ts;
             Source.Cancel();
+            Source = new CancellationTokenSource();
             foreach (var job in SettingsService.Settings.Jobs) {
                 foreach (var time in job.Schedule) {
                     if (time > DateTime.Now) {
@@ -153,6 +155,7 @@ namespace BackupServiceDaemon {
             var progress = new Progress<BackupProgress>();
             progress.ProgressChanged += (s, e) => {
                 LogItem report = new LogItem() {
+                    ID = 0,
                     JobID = backup.JobID,
                     Date = DateTime.Now,
                     Message = String.Format("{0} to {1} @ {2}%", backup.Source, backup.Target, e.Percentage),

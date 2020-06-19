@@ -70,6 +70,27 @@ namespace BackupServiceDaemon.Backuping.Backups {
                 return null;
             return JsonSerializer.Deserialize<Snapshot>(File.ReadAllText(path));
         }
+        protected int LoadNumber() {
+            string path = Path.Combine(Source, ConfigDirectory);
+            try {
+                foreach (string file in Directory.GetFiles(path)) {
+                    if (file.StartsWith('r'))
+                        return Convert.ToInt32(file.Substring(1));
+                }
+            }
+            catch (FileNotFoundException e) { }
+            catch (DirectoryNotFoundException e) { }
+
+            return 0;
+        }
+        public void SaveNumber(int number) {
+            string path = Path.Combine(Source, ConfigDirectory);
+            foreach (string file in Directory.GetFiles(path)) {
+                if (file.StartsWith('r'))
+                    File.Delete(Path.Combine(path, file));
+            }
+            using (File.Create(Path.Combine(path, "r" + number))) { }
+        }
         public async void SaveSnapshot(Snapshot snapshot) {
             string confDir = Path.Combine(Source, ConfigDirectory);
             Directory.CreateDirectory(confDir);

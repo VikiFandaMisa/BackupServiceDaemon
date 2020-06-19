@@ -10,10 +10,12 @@ namespace BackupServiceDaemon.Backuping.Backups {
             Progress.Report(new BackupProgress() { Percentage = 0, Status = "Started differential backup" });
 
             Snapshot snapshot = LoadSnapshot();
+            int number = LoadNumber();
             var first = false;
 
-            if (snapshot == null) {
+            if (snapshot == null || number > Retention) {
                 first = true;
+                number = 0;
                 snapshot = new Snapshot("");
             }
 
@@ -22,6 +24,7 @@ namespace BackupServiceDaemon.Backuping.Backups {
             if (first) {
                 SaveSnapshot(addedDeleted.Item1);
             }
+            SaveNumber(++number);
 
             Progress.Report(new BackupProgress() { Percentage = 100, Status = "Done" });
         }
