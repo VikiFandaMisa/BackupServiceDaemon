@@ -16,39 +16,10 @@ namespace BackupServiceDaemon.Backuping.FileSystemAPIs {
         public string Target { get; set; }
         public void CreateDirectory(string directory) {
             Zip.AddDirectory(directory);
-            FtpWebRequest request = (FtpWebRequest)WebRequest.Create(Server + Zip);
-            request.Method = WebRequestMethods.Ftp.UploadFile;
-            request.Credentials = Creds;
-
-            byte[] fileContents;
-            using (StreamReader sourceStream = new StreamReader(Zip.Name)) {
-                fileContents = Encoding.UTF8.GetBytes(sourceStream.ReadToEnd());
-            }
-
-            request.ContentLength = fileContents.Length;
-
-            using (Stream requestStream = request.GetRequestStream()) {
-                requestStream.Write(fileContents, 0, fileContents.Length);
-            }
         }
         public void CopyFile(string source, string target) {
             string t = target.Replace(Target, "");
             Zip.AddFile(source, t);
-
-            FtpWebRequest request = (FtpWebRequest)WebRequest.Create(Server + Zip);
-            request.Method = WebRequestMethods.Ftp.UploadFile;
-            request.Credentials = Creds;
-
-            byte[] fileContents;
-            using (StreamReader sourceStream = new StreamReader(Zip.Name)) {
-                fileContents = Encoding.UTF8.GetBytes(sourceStream.ReadToEnd());
-            }
-
-            request.ContentLength = fileContents.Length;
-
-            using (Stream requestStream = request.GetRequestStream()) {
-                requestStream.Write(fileContents, 0, fileContents.Length);
-            }
         }
         public string CombinePath(params string[] path) {
             string result = Server;
@@ -73,6 +44,20 @@ namespace BackupServiceDaemon.Backuping.FileSystemAPIs {
         }
         public void Dispose() {
             Zip.Save(Target + ".zip");
+            FtpWebRequest request = (FtpWebRequest)WebRequest.Create(Server + Zip);
+            request.Method = WebRequestMethods.Ftp.UploadFile;
+            request.Credentials = Creds;
+
+            byte[] fileContents;
+            using (StreamReader sourceStream = new StreamReader(Zip.Name)) {
+                fileContents = Encoding.UTF8.GetBytes(sourceStream.ReadToEnd());
+            }
+
+            request.ContentLength = fileContents.Length;
+
+            using (Stream requestStream = request.GetRequestStream()) {
+                requestStream.Write(fileContents, 0, fileContents.Length);
+            }
         }
     }
 }
