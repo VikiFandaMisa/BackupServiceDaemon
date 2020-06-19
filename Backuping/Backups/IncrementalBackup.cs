@@ -9,7 +9,7 @@ namespace BackupServiceDaemon.Backuping.Backups {
             Progress.Report(new BackupProgress() { Percentage = 0, Status = "Started incremental backup" });
 
             Snapshot snapshot = LoadSnapshot();
-            int number = LoadNumber();
+            int number = LoadNumber() + 1;
 
             if (snapshot == null || number > Retention) {
                 number = 0;
@@ -22,7 +22,7 @@ namespace BackupServiceDaemon.Backuping.Backups {
             snapshot.Subtract(addedDeleted.Item2);
 
             SaveSnapshot(snapshot);
-            SaveNumber(++number);
+            SaveNumber(number);
 
             Progress.Report(new BackupProgress() { Percentage = 100, Status = "Done" });
         }

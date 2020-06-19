@@ -74,11 +74,11 @@ namespace BackupServiceDaemon.Backuping.Backups {
             string path = Path.Combine(Source, ConfigDirectory);
             try {
                 foreach (string file in Directory.GetFiles(path)) {
-                    if (file.StartsWith('r'))
-                        return Convert.ToInt32(file.Substring(1));
+                    var fileName = Path.GetFileName(file);
+                    if (fileName.StartsWith('r'))
+                        return Convert.ToInt32(fileName.Substring(1));
                 }
             }
-            catch (FileNotFoundException e) { }
             catch (DirectoryNotFoundException e) { }
 
             return 0;
@@ -86,8 +86,8 @@ namespace BackupServiceDaemon.Backuping.Backups {
         public void SaveNumber(int number) {
             string path = Path.Combine(Source, ConfigDirectory);
             foreach (string file in Directory.GetFiles(path)) {
-                if (file.StartsWith('r'))
-                    File.Delete(Path.Combine(path, file));
+                if (Path.GetFileName(file).StartsWith('r'))
+                    File.Delete(file);
             }
             using (File.Create(Path.Combine(path, "r" + number))) { }
         }
