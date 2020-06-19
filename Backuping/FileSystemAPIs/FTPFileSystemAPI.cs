@@ -5,8 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Net;
 
-namespace BackupServiceDaemon.Backuping.FileSystemAPIs
-{
+namespace BackupServiceDaemon.Backuping.FileSystemAPIs {
     public class FTPFileSystemAPI : IFileSystemAPI {
         public const char SEPARATOR = '/';
         public NetworkCredential creds { get; set; }
@@ -22,22 +21,19 @@ namespace BackupServiceDaemon.Backuping.FileSystemAPIs
             request.Credentials = creds;
 
             byte[] fileContents;
-            using (StreamReader sourceStream = new StreamReader(source))
-            {
+            using (StreamReader sourceStream = new StreamReader(source)) {
                 fileContents = Encoding.UTF8.GetBytes(sourceStream.ReadToEnd());
             }
 
             request.ContentLength = fileContents.Length;
 
-            using (Stream requestStream = request.GetRequestStream())
-            {
+            using (Stream requestStream = request.GetRequestStream()) {
                 requestStream.Write(fileContents, 0, fileContents.Length);
             }
         }
         public string CombinePath(params string[] path) {
             string result = server;
-            foreach (var item in path)
-            {
+            foreach (var item in path) {
                 if (!item.EndsWith(SEPARATOR))
                     result += SEPARATOR + item;
             }

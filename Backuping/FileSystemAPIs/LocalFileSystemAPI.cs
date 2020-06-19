@@ -1,7 +1,6 @@
 using System.IO;
 
-namespace BackupServiceDaemon.Backuping.FileSystemAPIs
-{
+namespace BackupServiceDaemon.Backuping.FileSystemAPIs {
     public class LocalFileSystemAPI : IFileSystemAPI {
         public void CreateDirectory(string directory) {
             Directory.CreateDirectory(directory);

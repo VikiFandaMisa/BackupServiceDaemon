@@ -7,10 +7,8 @@ using BackupServiceDaemon.Backuping;
 using BackupServiceDaemon.Backuping.Backups;
 using BackupServiceDaemon.Backuping.FileSystemAPIs;
 
-namespace BackupServiceDaemon
-{
-    public class Application
-    {
+namespace BackupServiceDaemon {
+    public class Application {
         public static bool Exit { get; set; } = false;
         static CancellationTokenSource Source = new CancellationTokenSource();
         static CancellationToken CancellationToken = Source.Token;
@@ -35,7 +33,7 @@ namespace BackupServiceDaemon
             while (!Exit) {
                 ConsoleKey info = Console.ReadKey().Key;
                 Console.WriteLine();
-                
+
                 if (info == ConsoleKey.F1)
                     Application.Register();
                 else if (info == ConsoleKey.F2)
@@ -59,10 +57,10 @@ namespace BackupServiceDaemon
 
             try {
                 APIService.Token = APIService.GetToken(new TokenRequest() {
-                    ID = (int) SettingsService.Settings.ID
+                    ID = (int)SettingsService.Settings.ID
                 });
             }
-            catch  (Exception e) {
+            catch (Exception e) {
                 throw e;
             }
             finally {
@@ -79,7 +77,7 @@ namespace BackupServiceDaemon
                 });
                 SettingsService.Settings.ID = self.ID;
             }
-            catch  (Exception e) {
+            catch (Exception e) {
                 throw e;
             }
             finally {
@@ -99,7 +97,7 @@ namespace BackupServiceDaemon
                 Computer self = APIService.GetSelf();
                 System.Console.WriteLine(self.ToString());
             }
-            catch  (Exception e) {
+            catch (Exception e) {
                 throw e;
             }
         }
@@ -109,7 +107,7 @@ namespace BackupServiceDaemon
                 Job[] jobs = APIService.GetJobs();
                 SettingsService.Settings.Jobs = jobs;
             }
-            catch  (Exception e) {
+            catch (Exception e) {
                 throw e;
             }
             finally {
@@ -121,7 +119,7 @@ namespace BackupServiceDaemon
             TimeSpan ts;
             Source.Cancel();
             foreach (var job in SettingsService.Settings.Jobs) {
-                foreach (var time in job.Schedule) {                    
+                foreach (var time in job.Schedule) {
                     if (time > DateTime.Now) {
                         ts = time - DateTime.Now;
                         Task.Delay(ts, Source.Token).ContinueWith(t => RunJob(job), Source.Token);
@@ -133,11 +131,11 @@ namespace BackupServiceDaemon
             }
         }
         public static void RunJob(Job job) {
-            foreach(Path target in job.Targets) {
-                foreach(Path source in job.Sources) {
+            foreach (Path target in job.Targets) {
+                foreach (Path source in job.Sources) {
                     IFileSystemAPI fileSystemAPI;
                     //if (target.Network == "") {
-                        fileSystemAPI = new LocalFileSystemAPI();
+                    fileSystemAPI = new LocalFileSystemAPI();
                     /*}
                     else {
 
@@ -160,8 +158,8 @@ namespace BackupServiceDaemon
         }
         public static void RunBackup(Backup backup) {
             var progress = new Progress<BackupProgress>();
-            progress.ProgressChanged += ( s, e ) => System.Console.WriteLine("{0} - {1}", e.Percentage, e.Status);
-            progress.ProgressChanged += ( s, e ) => {
+            progress.ProgressChanged += (s, e) => System.Console.WriteLine("{0} - {1}", e.Percentage, e.Status);
+            progress.ProgressChanged += (s, e) => {
                 LogItem report = new LogItem() {
                     JobID = backup.JobID,
                     Date = DateTime.Now,

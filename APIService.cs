@@ -5,12 +5,10 @@ using System.Net.Http.Headers;
 
 using BackupServiceDaemon.Models;
 
-namespace BackupServiceDaemon
-{
-    public static class APIService
-    {
-		public static string Token { get; set; }
-        
+namespace BackupServiceDaemon {
+    public static class APIService {
+        public static string Token { get; set; }
+
         public static Computer GetSelf() {
             if (Token == null)
                 throw new Exception("No token");
@@ -27,7 +25,7 @@ namespace BackupServiceDaemon
 
                     var requestTask = client.SendAsync(request);
                     requestTask.Wait();
-                    
+
                     if (requestTask.Result.IsSuccessStatusCode) {
                         var readTask = requestTask.Result.Content.ReadAsAsync<Computer>();
                         readTask.Wait();
@@ -55,7 +53,7 @@ namespace BackupServiceDaemon
 
                     var requestTask = client.SendAsync(request);
                     requestTask.Wait();
-                    
+
                     if (requestTask.Result.IsSuccessStatusCode) {
                         var readTask = requestTask.Result.Content.ReadAsAsync<Job[]>();
                         readTask.Wait();
@@ -66,8 +64,8 @@ namespace BackupServiceDaemon
                 }
             }
         }
-        
-		public static string GetToken(TokenRequest tokenRequest) {
+
+        public static string GetToken(TokenRequest tokenRequest) {
             using (var handler = new HttpClientHandler()) {
                 handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
 
@@ -80,7 +78,7 @@ namespace BackupServiceDaemon
 
                     var requestTask = client.SendAsync(request);
                     requestTask.Wait();
-                    
+
                     if (requestTask.Result.IsSuccessStatusCode) {
                         var readTask = requestTask.Result.Content.ReadAsAsync<TokenResponse>();
                         readTask.Wait();
@@ -90,13 +88,12 @@ namespace BackupServiceDaemon
                     throw new Exception(requestTask.Result.ToString());
                 }
             }
-		}
+        }
 
-		public static Computer Register(ComputerRegistration registration)
-        {
+        public static Computer Register(ComputerRegistration registration) {
             using (var handler = new HttpClientHandler()) {
                 handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-                
+
                 using (var client = new HttpClient(handler)) {
                     var request = new HttpRequestMessage() {
                         RequestUri = new Uri(SettingsService.Settings.Server + "computers/register"),
@@ -106,7 +103,7 @@ namespace BackupServiceDaemon
 
                     var requestTask = client.SendAsync(request);
                     requestTask.Wait();
-                    
+
                     if (requestTask.Result.IsSuccessStatusCode) {
                         var readTask = requestTask.Result.Content.ReadAsAsync<Computer>();
                         readTask.Wait();
@@ -120,7 +117,7 @@ namespace BackupServiceDaemon
         public static void SendReport(LogItem report) {
             using (var handler = new HttpClientHandler()) {
                 handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-                
+
                 using (var client = new HttpClient(handler)) {
                     var request = new HttpRequestMessage() {
                         RequestUri = new Uri(SettingsService.Settings.Server + "log"),
@@ -130,7 +127,7 @@ namespace BackupServiceDaemon
 
                     var requestTask = client.SendAsync(request);
                     requestTask.Wait();
-                    
+
                     if (!requestTask.Result.IsSuccessStatusCode)
                         throw new Exception(requestTask.Result.ToString());
                 }

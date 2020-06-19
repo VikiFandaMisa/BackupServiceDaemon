@@ -1,9 +1,7 @@
 using System;
 
-namespace BackupServiceDaemon.Backuping.FileSystemAPIs
-{
-    public interface IFileSystemAPI : IDisposable
-    {
+namespace BackupServiceDaemon.Backuping.FileSystemAPIs {
+    public interface IFileSystemAPI : IDisposable {
         void CreateDirectory(string directory);
         void CopyFile(string source, string target);
         string CombinePath(params string[] path);

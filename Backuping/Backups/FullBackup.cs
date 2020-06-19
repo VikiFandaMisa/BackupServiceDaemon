@@ -2,8 +2,7 @@ using System.IO;
 
 using BackupServiceDaemon.Backuping.FileSystemAPIs;
 
-namespace BackupServiceDaemon.Backuping.Backups
-{
+namespace BackupServiceDaemon.Backuping.Backups {
     public class FullBackup : Backup {
         public FullBackup(string source, string target, int jobID, IFileSystemAPI fileSystemAPI)
             : base(source, target, jobID, fileSystemAPI) { }
@@ -14,5 +13,5 @@ namespace BackupServiceDaemon.Backuping.Backups
 
             Progress.Report(new BackupProgress() { Percentage = 100, Status = "Done" });
         }
-    }    
+    }
 }

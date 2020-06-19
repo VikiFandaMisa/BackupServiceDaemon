@@ -1,7 +1,5 @@
-namespace BackupServiceDaemon.Models
-{
-    public class TokenRequest
-    {
-        public int ID { get; set; }  
+namespace BackupServiceDaemon.Models {
+    public class TokenRequest {
+        public int ID { get; set; }
     }
 }

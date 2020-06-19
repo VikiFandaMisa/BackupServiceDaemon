@@ -2,8 +2,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 
-namespace BackupServiceDaemon.Backuping
-{
+namespace BackupServiceDaemon.Backuping {
     public class Snapshot {
         public string Name { get; set; }
         public List<string> Files { get; set; }
@@ -72,7 +71,7 @@ namespace BackupServiceDaemon.Backuping
             var pathFilename = ParseFilename(relativePath);
 
             Snapshot directory = GetDirectory(pathFilename.Item1);
-            
+
             if (directory == null)
                 return false;
 

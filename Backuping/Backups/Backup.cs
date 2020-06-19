@@ -6,10 +6,8 @@ using System.Text.Json;
 
 using BackupServiceDaemon.Backuping.FileSystemAPIs;
 
-namespace BackupServiceDaemon.Backuping.Backups
-{
-    public abstract class Backup
-    {
+namespace BackupServiceDaemon.Backuping.Backups {
+    public abstract class Backup {
         public string Source { get; set; }
         public string Target { get; set; }
         public int JobID { get; set; }
@@ -54,7 +52,7 @@ namespace BackupServiceDaemon.Backuping.Backups
                 if (!compareTo.DirExist(relative)) {
                     added.AddDirectory(relative);
                     FileSystemAPI.CreateDirectory(FileSystemAPI.CombinePath(Target, FileSystemAPI.ConvertSeparators(relative)));
-                } 
+                }
                 CopyChangedFiles(path, compareTo, added, deleted);
             }
         }
@@ -70,7 +68,7 @@ namespace BackupServiceDaemon.Backuping.Backups
                 return null;
             return JsonSerializer.Deserialize<Snapshot>(File.ReadAllText(path));
         }
-        public async void SaveSnapshot(Snapshot snapshot) { 
+        public async void SaveSnapshot(Snapshot snapshot) {
             string confDir = Path.Combine(Source, ConfigDirectory);
             Directory.CreateDirectory(confDir);
             using (FileStream fs = File.Create(Path.Combine(confDir, ConfigName)))

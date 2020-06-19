@@ -1,7 +1,6 @@
 using System.IO;
 
-namespace BackupServiceDaemon.Backuping.FileSystemAPIs
-{
+namespace BackupServiceDaemon.Backuping.FileSystemAPIs {
     public class FTPZIPFileSystemAPI : IFileSystemAPI {
         public void CreateDirectory(string directory) {
             throw new System.NotImplementedException();
