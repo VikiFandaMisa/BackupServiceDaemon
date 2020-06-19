@@ -27,8 +27,8 @@ namespace BackupServiceDaemon.Backuping {
             Snapshot directory = this;
             for (int i = 0; i < relativePath.Count; i++) {
                 var old = directory;
-                directory = directory = directory.Directories.SingleOrDefault(dir => dir.Name == relativePath[i]);
-                if (directory == null) {
+                directory = directory.Directories.SingleOrDefault(dir => dir.Name == relativePath[i]);
+                if (directory != null) {
                     var toAdd = new Snapshot(relativePath[i]);
                     directory.Directories.Add(toAdd);
                     directory = toAdd;

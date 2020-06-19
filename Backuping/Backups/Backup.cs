@@ -49,11 +49,13 @@ namespace BackupServiceDaemon.Backuping.Backups {
             foreach (var dir in Directory.GetDirectories(path)) {
                 string absolute = Path.Combine(path, dir);
                 string relative = Utils.UriRelativePath(absolute, Source);
+                if (relative == ConfigDirectory)
+                    continue;
                 if (!compareTo.DirExist(relative)) {
                     added.AddDirectory(relative);
                     FileSystemAPI.CreateDirectory(FileSystemAPI.CombinePath(Target, FileSystemAPI.ConvertSeparators(relative)));
                 }
-                CopyChangedFiles(path, compareTo, added, deleted);
+                CopyChangedFiles(absolute, compareTo, added, deleted);
             }
         }
         protected string GetTarget(string targetDirectory) {

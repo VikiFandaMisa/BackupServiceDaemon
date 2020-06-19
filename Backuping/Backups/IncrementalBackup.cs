@@ -10,6 +10,11 @@ namespace BackupServiceDaemon.Backuping.Backups {
 
             Snapshot snapshot = LoadSnapshot();
 
+            if (snapshot == null) {
+                snapshot = new Snapshot("");
+            }
+
+
             var addedDeleted = CopyChangedFiles(snapshot);
 
             snapshot.Union(addedDeleted.Item1);

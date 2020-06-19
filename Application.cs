@@ -6,16 +6,15 @@ using BackupServiceDaemon.Models;
 using BackupServiceDaemon.Backuping;
 using BackupServiceDaemon.Backuping.Backups;
 using BackupServiceDaemon.Backuping.FileSystemAPIs;
+using System.Net;
 
 namespace BackupServiceDaemon {
     public class Application {
         public static bool Exit { get; set; } = false;
         static CancellationTokenSource Source = new CancellationTokenSource();
-        static CancellationToken CancellationToken = Source.Token;
         static Application() {
             try {
                 SettingsService.Load();
-                Login();
             }
             catch (System.IO.FileNotFoundException) {
                 Console.Write("No settings found.\nPlease enter your server's address: ");
@@ -24,28 +23,15 @@ namespace BackupServiceDaemon {
                     SettingsService.Settings.Server += '/';
                 SettingsService.Save();
             }
-        }
-        public static void Tick() {
-            Jobs();
+            Login();
         }
 
         public static void Loop() {
+            Self();
             while (!Exit) {
-                ConsoleKey info = Console.ReadKey().Key;
-                Console.WriteLine();
-
-                if (info == ConsoleKey.F1)
-                    Application.Register();
-                else if (info == ConsoleKey.F2)
-                    Application.Self();
-                else if (info == ConsoleKey.F3) {
-                    Application.Jobs();
-                    SetJobs();
-                }
-                else if (info == ConsoleKey.F4)
-                    RunJob(SettingsService.Settings.Jobs[0]);
-                else if (info == ConsoleKey.F5)
-                    SettingsService.Wipe();
+                Jobs();
+                SetJobs();
+                Thread.Sleep(10 * 60 * 1000);
             }
         }
 
@@ -89,7 +75,7 @@ namespace BackupServiceDaemon {
 
         public static void Self() {
             if (SettingsService.Settings.ID == null) {
-                Console.WriteLine("Computer is not registred yet");
+                Console.WriteLine("Computer is not logged in yet");
                 return;
             }
 
@@ -110,10 +96,8 @@ namespace BackupServiceDaemon {
             catch (Exception e) {
                 throw e;
             }
-            finally {
-                SettingsService.Save();
-                System.Console.WriteLine("Got {0} jobs", SettingsService.Settings.Jobs.Length);
-            }
+            System.Console.WriteLine("Got " + SettingsService.Settings.Jobs.Length + " jobs");
+            SettingsService.Save();
         }
         public static void SetJobs() {
             TimeSpan ts;
@@ -123,9 +107,6 @@ namespace BackupServiceDaemon {
                     if (time > DateTime.Now) {
                         ts = time - DateTime.Now;
                         Task.Delay(ts, Source.Token).ContinueWith(t => RunJob(job), Source.Token);
-                        System.Console.WriteLine(DateTime.Now);
-                        System.Console.WriteLine(ts);
-                        System.Console.WriteLine(time);
                     }
                 }
             }
@@ -134,12 +115,24 @@ namespace BackupServiceDaemon {
             foreach (Path target in job.Targets) {
                 foreach (Path source in job.Sources) {
                     IFileSystemAPI fileSystemAPI;
-                    //if (target.Network == "") {
-                    fileSystemAPI = new LocalFileSystemAPI();
-                    /*}
+                    if (target.Network == null && job.TargetFileType == BackupFileType.Zip) {
+                        fileSystemAPI = new LocalZIPFileSystemAPI();
+                    }
+                    else if (target.Network != null && job.TargetFileType == BackupFileType.Plain) {
+                        fileSystemAPI = new FTPFileSystemAPI() {
+                            Server = target.Network.Server,
+                            Creds = new NetworkCredential(target.Network.Name, target.Network.Password)
+                        };
+                    }
+                    else if (target.Network != null && job.TargetFileType == BackupFileType.Zip) {
+                        fileSystemAPI = new FTPZIPFileSystemAPI() {
+                            Server = target.Network.Server,
+                            Creds = new NetworkCredential(target.Network.Name, target.Network.Password)
+                        };
+                    }
                     else {
-
-                    }*/
+                        fileSystemAPI = new LocalFileSystemAPI();
+                    }
 
                     if (job.Type == BackupType.Full)
                         RunBackup(
@@ -158,7 +151,6 @@ namespace BackupServiceDaemon {
         }
         public static void RunBackup(Backup backup) {
             var progress = new Progress<BackupProgress>();
-            progress.ProgressChanged += (s, e) => System.Console.WriteLine("{0} - {1}", e.Percentage, e.Status);
             progress.ProgressChanged += (s, e) => {
                 LogItem report = new LogItem() {
                     JobID = backup.JobID,

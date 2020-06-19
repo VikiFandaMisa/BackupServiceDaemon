@@ -1,4 +1,3 @@
-
 using System;
 using System.IO;
 using System.Collections.Generic;
@@ -8,17 +7,17 @@ using System.Net;
 namespace BackupServiceDaemon.Backuping.FileSystemAPIs {
     public class FTPFileSystemAPI : IFileSystemAPI {
         public const char SEPARATOR = '/';
-        public NetworkCredential creds { get; set; }
-        public string server { get; set; }
+        public NetworkCredential Creds { get; set; }
+        public string Server { get; set; }
         public void CreateDirectory(string directory) {
             WebRequest request = WebRequest.Create(directory);
             request.Method = WebRequestMethods.Ftp.MakeDirectory;
-            request.Credentials = creds;
+            request.Credentials = Creds;
         }
         public void CopyFile(string source, string target) {
-            FtpWebRequest request = (FtpWebRequest)WebRequest.Create(server + target);
+            FtpWebRequest request = (FtpWebRequest)WebRequest.Create(Server + target);
             request.Method = WebRequestMethods.Ftp.UploadFile;
-            request.Credentials = creds;
+            request.Credentials = Creds;
 
             byte[] fileContents;
             using (StreamReader sourceStream = new StreamReader(source)) {
@@ -32,7 +31,7 @@ namespace BackupServiceDaemon.Backuping.FileSystemAPIs {
             }
         }
         public string CombinePath(params string[] path) {
-            string result = server;
+            string result = Server;
             foreach (var item in path) {
                 if (!item.EndsWith(SEPARATOR))
                     result += SEPARATOR + item;
@@ -50,8 +49,8 @@ namespace BackupServiceDaemon.Backuping.FileSystemAPIs {
             return path;
         }
         public void CreateTarget(string target) {
-            if (!this.server.EndsWith(SEPARATOR))
-                server += SEPARATOR;
+            if (!this.Server.EndsWith(SEPARATOR))
+                Server += SEPARATOR;
         }
     }
 }

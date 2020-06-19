@@ -1,7 +1,11 @@
 using System.IO;
+using System.Net;
 
 namespace BackupServiceDaemon.Backuping.FileSystemAPIs {
     public class FTPZIPFileSystemAPI : IFileSystemAPI {
+        public const char SEPARATOR = '/';
+        public NetworkCredential Creds { get; set; }
+        public string Server { get; set; }
         public void CreateDirectory(string directory) {
             throw new System.NotImplementedException();
         }
