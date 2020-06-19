@@ -1,23 +1,21 @@
 using System.IO;
 using Ionic.Zip;
 
-namespace BackupServiceDaemon.Backuping.FileSystemAPIs
-{
+namespace BackupServiceDaemon.Backuping.FileSystemAPIs {
     public class LocalZIPFileSystemAPI : IFileSystemAPI {
         public ZipFile Zip { get; set; }
         public string Target { get; set; }
         public const char SEPARATOR = '/';
-        public void CreateDirectory(string directory) {            
-            Zip.AddDirectory(directory);            
+        public void CreateDirectory(string directory) {
+            Zip.AddDirectory(directory);
         }
         public void CopyFile(string source, string target) {
-            string t = target.Replace(Target,"");
+            string t = target.Replace(Target, "");
             Zip.AddFile(source, t);
         }
         public string CombinePath(params string[] path) {
             string result = "";
-            foreach (var item in path)
-            {
+            foreach (var item in path) {
                 if (!item.EndsWith(SEPARATOR))
                     result += SEPARATOR + item;
             }

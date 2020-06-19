@@ -2,10 +2,8 @@ using System.IO;
 using System.Text.Json;
 using static System.Environment;
 
-namespace BackupServiceDaemon
-{
-    public static class SettingsService
-    {
+namespace BackupServiceDaemon {
+    public static class SettingsService {
         public static string ApplicationData { get; set; }
         public static string SettingsFile { get { return Path.Combine(ApplicationData, "settings.json"); } }
         public static Settings Settings { get; set; }
@@ -23,8 +21,7 @@ namespace BackupServiceDaemon
             Settings = new Settings();
         }
         public static async void Save() {
-            using (FileStream fs = File.Create(SettingsFile))
-            {
+            using (FileStream fs = File.Create(SettingsFile)) {
                 await JsonSerializer.SerializeAsync(fs, Settings);
             }
         }
@@ -37,11 +34,10 @@ namespace BackupServiceDaemon
         }
     }
 
-    public class Settings
-    {
+    public class Settings {
         public string ConfigurationFolderName { get; set; } = ".BackupService";
         public int? ID { get; set; }
         public string Server { get; set; }
-        public BackupServiceDaemon.Models.Job[] Jobs {get; set;}
+        public BackupServiceDaemon.Models.Job[] Jobs { get; set; }
     }
 }

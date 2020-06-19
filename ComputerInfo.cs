@@ -3,10 +3,8 @@ using System.Linq;
 using System.Net.NetworkInformation;
 
 
-namespace BackupServiceDaemon
-{
-    public static class ComputerInfo
-    {
+namespace BackupServiceDaemon {
+    public static class ComputerInfo {
         public static string GetHostname() {
             return Environment.MachineName;
         }
@@ -16,7 +14,7 @@ namespace BackupServiceDaemon
                 if (nic.OperationalStatus == OperationalStatus.Up)
                     return nic;
             }
-            
+
             throw new Exception("No NIC found");
         }
 
@@ -27,7 +25,7 @@ namespace BackupServiceDaemon
         public static string GetMAC() {
             NetworkInterface nic = GetFirstWorkingNIC();
             return string.Join(":", (from b in nic.GetPhysicalAddress().GetAddressBytes()
-                                    select b.ToString("X2")).ToArray());
+                                     select b.ToString("X2")).ToArray());
         }
     }
 }
